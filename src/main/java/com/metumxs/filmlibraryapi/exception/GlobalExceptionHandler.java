@@ -73,7 +73,7 @@ public class GlobalExceptionHandler
 
         return buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
-                message,
+                message.isBlank() ? "Method Argument Validation failed" : message,
                 request.getRequestURI()
         );
     }
@@ -110,7 +110,7 @@ public class GlobalExceptionHandler
 
         return buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
-                message,
+                message.isBlank() ? "Constraints Validation failed" : message,
                 request.getRequestURI()
         );
     }

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -62,5 +63,6 @@ public class Movie
                     foreignKey = @ForeignKey(name = "fk_movie_genres_genre")
             )
     )
+    @BatchSize(size = 50)
     private Set<Genre> genres = new LinkedHashSet<>();
 }
