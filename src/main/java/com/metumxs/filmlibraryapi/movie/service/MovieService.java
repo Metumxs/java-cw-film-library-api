@@ -151,7 +151,8 @@ public class MovieService
 
     private MovieDetailsResponseDto mapToDetailsResponse(Movie movie)
     {
-        MovieRatingSummaryProjection movieRatingSummary = ratingRepository.findRatingSummaryByMovieId(movie.getId())
+        MovieRatingSummaryProjection movieRatingSummary = ratingRepository
+                .findRatingSummaryByMovieId(movie.getId())
                 .orElse(null);
 
         Double averageRating = movieRatingSummary != null ? movieRatingSummary.getAverageRating() : null;
