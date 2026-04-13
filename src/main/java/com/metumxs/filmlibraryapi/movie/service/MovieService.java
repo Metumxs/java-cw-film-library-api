@@ -9,8 +9,15 @@ import com.metumxs.filmlibraryapi.exception.NotFoundException;
 import com.metumxs.filmlibraryapi.movie.dto.MovieDetailsResponseDto;
 import com.metumxs.filmlibraryapi.movie.dto.MovieSummaryResponseDto;
 import com.metumxs.filmlibraryapi.movie.mapper.MovieMapper;
+import com.metumxs.filmlibraryapi.domain.entity.Genre;
+import com.metumxs.filmlibraryapi.domain.repository.GenreRepository;
+import com.metumxs.filmlibraryapi.movie.dto.CreateMovieRequestDto;
+import com.metumxs.filmlibraryapi.movie.dto.UpdateMovieRequestDto;
+
 import jakarta.persistence.criteria.Join;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Service
 @Transactional(readOnly = true)
@@ -33,6 +42,7 @@ public class MovieService
     private final MovieRepository movieRepository;
     private final RatingRepository ratingRepository;
     private final MovieMapper movieMapper;
+    private final GenreRepository genreRepository;
 
     public Page<MovieSummaryResponseDto> getMovies(
             int pageNumber,
@@ -92,7 +102,56 @@ public class MovieService
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new NotFoundException("Movie with id " + movieId + " not found"));
 
-        MovieRatingSummaryProjection movieRatingSummary = ratingRepository.findRatingSummaryByMovieId(movieId)
+        return mapToDetailsResponse(movie);
+    }
+
+    @Transactional
+    public MovieDetailsResponseDto createMovie(CreateMovieRequestDto requestDto)
+    {
+        validateReleaseYear(requestDto.releaseYear());
+
+        Set<Genre> genres = loadGenresByIds(requestDto.genreIds());
+
+        Movie movie = movieMapper.toEntity(requestDto);
+        movie.setGenres(genres);
+
+        Movie savedMovie = movieRepository.save(movie);
+
+        return mapToDetailsResponse(savedMovie);
+    }
+
+    @Transactional
+    public MovieDetailsResponseDto updateMovie(Long movieId, UpdateMovieRequestDto requestDto)
+    {
+        validateReleaseYear(requestDto.releaseYear());
+
+        Movie movie = movieRepository.findById(movieId)
+                .orElseThrow(() -> new NotFoundException("Movie with id " + movieId + " not found"));
+
+        Set<Genre> genres = loadGenresByIds(requestDto.genreIds());
+
+        movieMapper.updateEntityFromDto(requestDto, movie);
+        movie.setGenres(genres);
+
+        Movie updatedMovie = movieRepository.save(movie);
+
+        return mapToDetailsResponse(updatedMovie);
+    }
+
+    @Transactional
+    public void deleteMovie(Long movieId)
+    {
+        Movie movie = movieRepository.findById(movieId)
+                .orElseThrow(() -> new NotFoundException("Movie with id " + movieId + " not found"));
+
+        movieRepository.delete(movie);
+    }
+
+    // HELPER METHODS
+
+    private MovieDetailsResponseDto mapToDetailsResponse(Movie movie)
+    {
+        MovieRatingSummaryProjection movieRatingSummary = ratingRepository.findRatingSummaryByMovieId(movie.getId())
                 .orElse(null);
 
         Double averageRating = movieRatingSummary != null ? movieRatingSummary.getAverageRating() : null;
@@ -101,7 +160,22 @@ public class MovieService
         return movieMapper.toDetailsResponseDto(movie, averageRating, ratingsCount);
     }
 
-    // HELPER METHODS
+    private Set<Genre> loadGenresByIds(Set<Long> genreIds)
+    {
+        if (genreIds == null || genreIds.isEmpty())
+        {
+            throw new BadRequestException("genreIds must not be empty");
+        }
+
+        List<Genre> genres = genreRepository.findAllById(genreIds);
+
+        if (genres.size() != genreIds.size())
+        {
+            throw new BadRequestException("One or more genreIds are invalid");
+        }
+
+        return new LinkedHashSet<>(genres);
+    }
 
     private void validateReleaseYear(Integer releaseYear)
     {

@@ -4,6 +4,9 @@ import com.metumxs.filmlibraryapi.domain.entity.Genre;
 import com.metumxs.filmlibraryapi.domain.entity.Movie;
 import com.metumxs.filmlibraryapi.movie.dto.MovieDetailsResponseDto;
 import com.metumxs.filmlibraryapi.movie.dto.MovieSummaryResponseDto;
+import com.metumxs.filmlibraryapi.movie.dto.CreateMovieRequestDto;
+import com.metumxs.filmlibraryapi.movie.dto.UpdateMovieRequestDto;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -33,6 +36,18 @@ public interface MovieMapper
     @Mapping(target = "averageRating", source = "averageRating")
     @Mapping(target = "ratingsCount", source = "ratingsCount")
     MovieDetailsResponseDto toDetailsResponseDto(Movie movie, Double averageRating, Long ratingsCount);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "genres", ignore = true)
+    Movie toEntity(CreateMovieRequestDto requestDto);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "genres", ignore = true)
+    void updateEntityFromDto(UpdateMovieRequestDto requestDto, @MappingTarget Movie movie);
 
     @Named("mapGenresToNames")
     default Set<String> mapGenresToNames(Set<Genre> genres)

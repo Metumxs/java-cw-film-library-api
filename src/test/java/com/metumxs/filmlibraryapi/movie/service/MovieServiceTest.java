@@ -2,6 +2,7 @@ package com.metumxs.filmlibraryapi.movie.service;
 
 import com.metumxs.filmlibraryapi.domain.entity.Movie;
 import com.metumxs.filmlibraryapi.domain.projection.MovieRatingSummaryProjection;
+import com.metumxs.filmlibraryapi.domain.repository.GenreRepository;
 import com.metumxs.filmlibraryapi.domain.repository.MovieRepository;
 import com.metumxs.filmlibraryapi.domain.repository.RatingRepository;
 import com.metumxs.filmlibraryapi.exception.BadRequestException;
@@ -38,12 +39,15 @@ class MovieServiceTest
     @Mock
     private MovieMapper movieMapper;
 
+    @Mock
+    private GenreRepository genreRepository;
+
     private MovieService movieService;
 
     @BeforeEach
     void setUp()
     {
-        movieService = new MovieService(movieRepository, ratingRepository, movieMapper);
+        movieService = new MovieService(movieRepository, ratingRepository, movieMapper,  genreRepository);
     }
 
     @Test
