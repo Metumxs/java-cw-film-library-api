@@ -3,10 +3,12 @@ package com.metumxs.filmlibraryapi.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -17,6 +19,7 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 import java.time.OffsetDateTime;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler
 {
@@ -26,6 +29,8 @@ public class GlobalExceptionHandler
             HttpServletRequest request
     )
     {
+        log.warn("Resource not found at {}: {}", request.getRequestURI(), exception.getMessage());
+
         return buildErrorResponse(
                 HttpStatus.NOT_FOUND,
                 exception.getMessage(),
@@ -39,6 +44,8 @@ public class GlobalExceptionHandler
             HttpServletRequest request
     )
     {
+        log.warn("Data conflict at {}: {}", request.getRequestURI(), exception.getMessage());
+
         return buildErrorResponse(
                 HttpStatus.CONFLICT,
                 exception.getMessage(),
@@ -52,6 +59,8 @@ public class GlobalExceptionHandler
             HttpServletRequest request
     )
     {
+        log.warn("Bad request at {}: {}", request.getRequestURI(), exception.getMessage());
+
         return buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 exception.getMessage(),
@@ -70,6 +79,8 @@ public class GlobalExceptionHandler
                 .stream()
                 .map(this::formatFieldError)
                 .collect(Collectors.joining("; "));
+
+        log.warn("Method argument validation failed at {}: {}", request.getRequestURI(), message);
 
         return buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
@@ -90,6 +101,8 @@ public class GlobalExceptionHandler
                 .map(error -> error.getDefaultMessage() != null ? error.getDefaultMessage() : error.toString())
                 .collect(Collectors.joining("; "));
 
+        log.warn("Handler method validation failed at {}: {}", request.getRequestURI(), message);
+
         return buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 message.isBlank() ? "Validation failed" : message,
@@ -108,6 +121,8 @@ public class GlobalExceptionHandler
                 .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
                 .collect(Collectors.joining("; "));
 
+        log.warn("Constraint validation failed at {}: {}", request.getRequestURI(), message);
+
         return buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 message.isBlank() ? "Constraints Validation failed" : message,
@@ -117,7 +132,6 @@ public class GlobalExceptionHandler
 
     @ExceptionHandler({
             MissingServletRequestParameterException.class,
-            HttpMessageNotReadableException.class,
             IllegalArgumentException.class
     })
     public ResponseEntity<ErrorResponse> handleRequestParsingErrors(
@@ -125,9 +139,26 @@ public class GlobalExceptionHandler
             HttpServletRequest request
     )
     {
+        log.warn("Request parsing error at {}: {}", request.getRequestURI(), exception.getMessage());
+
         return buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 exception.getMessage(),
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleMessageNotReadable(
+            Exception exception,
+            HttpServletRequest request
+    )
+    {
+        log.warn("Malformed JSON request at {}: {}", request.getRequestURI(), exception.getMessage());
+
+        return buildErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                "Malformed JSON request",
                 request.getRequestURI()
         );
     }
@@ -136,7 +167,10 @@ public class GlobalExceptionHandler
     public ResponseEntity<ErrorResponse> handleMethodNotSupported(
             HttpRequestMethodNotSupportedException exception,
             HttpServletRequest request
-    ) {
+    )
+    {
+        log.warn("Method not supported at {}: {}", request.getRequestURI(), exception.getMessage());
+
         return buildErrorResponse(
                 HttpStatus.METHOD_NOT_ALLOWED,
                 exception.getMessage(),
@@ -150,12 +184,16 @@ public class GlobalExceptionHandler
             HttpServletRequest request
     )
     {
+        log.error("Unhandled exception occurred at {}: {}", request.getRequestURI(), exception.getMessage(), exception);
+
         return buildErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "An unexpected error occurred",
                 request.getRequestURI()
         );
     }
+
+    // HELPER METHODS
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(
             HttpStatus status,
