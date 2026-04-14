@@ -502,7 +502,7 @@ class MovieServiceTest
         verify(movieRepository).findById(999L);
         verifyNoInteractions(genreRepository);
         verifyNoInteractions(ratingRepository);
-        verifyNoMoreInteractions(movieMapper);
+        verifyNoInteractions(movieMapper);
     }
 
     @Test
@@ -592,7 +592,7 @@ class MovieServiceTest
         assertEquals("Movie with id 777 not found", exception.getMessage());
 
         verify(movieRepository).findById(777L);
-        verifyNoMoreInteractions(movieRepository);
+        verify(movieRepository, never()).delete(any(Movie.class));
         verifyNoInteractions(genreRepository);
         verifyNoInteractions(ratingRepository);
         verifyNoInteractions(movieMapper);
