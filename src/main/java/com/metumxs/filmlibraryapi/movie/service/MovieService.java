@@ -13,11 +13,8 @@ import com.metumxs.filmlibraryapi.domain.entity.Genre;
 import com.metumxs.filmlibraryapi.domain.repository.GenreRepository;
 import com.metumxs.filmlibraryapi.movie.dto.CreateMovieRequestDto;
 import com.metumxs.filmlibraryapi.movie.dto.UpdateMovieRequestDto;
-
 import jakarta.persistence.criteria.Join;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +22,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Year;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +29,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import static com.metumxs.filmlibraryapi.validation.ValidationConstants.MOVIE_MIN_YEAR;
 
 @Service
 @Transactional(readOnly = true)
@@ -147,7 +144,7 @@ public class MovieService
         movieRepository.delete(movie);
     }
 
-    // HELPER METHODS
+    // --- HELPER METHODS ---
 
     private MovieDetailsResponseDto mapToDetailsResponse(Movie movie)
     {
@@ -187,10 +184,10 @@ public class MovieService
 
         int currentYear = Year.now().getValue();
 
-        if (releaseYear < 1888 || releaseYear > currentYear)
+        if (releaseYear < MOVIE_MIN_YEAR || releaseYear > currentYear)
         {
             throw new BadRequestException(
-                    "releaseYear must be between 1888 and " + currentYear
+                    "releaseYear must be between " + MOVIE_MIN_YEAR + " and " + currentYear
             );
         }
     }

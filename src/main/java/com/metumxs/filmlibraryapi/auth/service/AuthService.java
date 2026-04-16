@@ -1,5 +1,7 @@
 package com.metumxs.filmlibraryapi.auth.service;
 
+import com.metumxs.filmlibraryapi.auth.dto.LoginRequestDto;
+import com.metumxs.filmlibraryapi.auth.dto.LoginResponseDto;
 import com.metumxs.filmlibraryapi.auth.dto.RegistrationRequestDto;
 import com.metumxs.filmlibraryapi.auth.dto.RegistrationResponseDto;
 import com.metumxs.filmlibraryapi.domain.entity.Role;
@@ -7,11 +9,15 @@ import com.metumxs.filmlibraryapi.domain.entity.User;
 import com.metumxs.filmlibraryapi.domain.repository.RoleRepository;
 import com.metumxs.filmlibraryapi.domain.repository.UserRepository;
 import com.metumxs.filmlibraryapi.exception.ConflictException;
+import com.metumxs.filmlibraryapi.security.JwtTokenService;
+import com.metumxs.filmlibraryapi.security.SecurityUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Locale;
 
 @Service
@@ -24,6 +30,8 @@ public class AuthService
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtTokenService jwtTokenService;
 
     public RegistrationResponseDto register(RegistrationRequestDto requestDto)
     {
@@ -55,7 +63,30 @@ public class AuthService
         );
     }
 
-    // HELPER METHODS
+    @Transactional(readOnly = true)
+    public LoginResponseDto login(LoginRequestDto requestDto)
+    {
+        String normalizedEmail = normalizeEmail(requestDto.email());
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        normalizedEmail,
+                        requestDto.password()
+                )
+        );
+
+        SecurityUserDetails userDetails = (SecurityUserDetails) authentication.getPrincipal();
+
+        String accessToken = jwtTokenService.generateAccessToken(userDetails);
+
+        return new LoginResponseDto(
+                accessToken,
+                "Bearer",
+                jwtTokenService.getAccessTokenExpiresInSeconds()
+        );
+    }
+
+    // --- HELPER METHODS ---
 
     private String normalizeName(String name)
     {

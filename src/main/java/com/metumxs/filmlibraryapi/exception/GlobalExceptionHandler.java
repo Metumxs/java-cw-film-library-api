@@ -2,9 +2,8 @@ package com.metumxs.filmlibraryapi.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
-
 import lombok.extern.slf4j.Slf4j;
-
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
-
 import java.time.OffsetDateTime;
 import java.util.stream.Collectors;
 
@@ -178,6 +176,21 @@ public class GlobalExceptionHandler
         );
     }
 
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(
+            AuthenticationException exception,
+            HttpServletRequest request
+    )
+    {
+        log.warn("Authentication exception occurred at {}: {}", request.getRequestURI(), exception.getMessage());
+
+        return buildErrorResponse(
+                HttpStatus.UNAUTHORIZED,
+                "Invalid email or password",
+                request.getRequestURI()
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(
             Exception exception,
@@ -193,7 +206,7 @@ public class GlobalExceptionHandler
         );
     }
 
-    // HELPER METHODS
+    // --- HELPER METHODS ---
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(
             HttpStatus status,

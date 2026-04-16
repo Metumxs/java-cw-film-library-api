@@ -13,7 +13,6 @@ import com.metumxs.filmlibraryapi.movie.mapper.MovieMapper;
 import com.metumxs.filmlibraryapi.domain.entity.Genre;
 import com.metumxs.filmlibraryapi.movie.dto.CreateMovieRequestDto;
 import com.metumxs.filmlibraryapi.movie.dto.UpdateMovieRequestDto;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,12 +21,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
-
 import java.time.Year;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
+import static com.metumxs.filmlibraryapi.validation.ValidationConstants.MOVIE_MIN_YEAR;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -175,7 +173,7 @@ class MovieServiceTest
     {
         BadRequestException exception = assertThrows(
                 BadRequestException.class,
-                () -> movieService.getMovies(0, 20, null, null, 1887)
+                () -> movieService.getMovies(0, 20, null, null, MOVIE_MIN_YEAR - 1)
         );
 
         assertTrue(exception.getMessage().contains("releaseYear must be between 1888"));
@@ -195,7 +193,7 @@ class MovieServiceTest
                 () -> movieService.getMovies(0, 20, null, null, invalidFutureYear)
         );
 
-        assertTrue(exception.getMessage().contains("releaseYear must be between 1888"));
+        assertTrue(exception.getMessage().contains("releaseYear must be between " + MOVIE_MIN_YEAR));
 
         verifyNoInteractions(movieRepository);
         verifyNoInteractions(ratingRepository);
@@ -418,7 +416,7 @@ class MovieServiceTest
                 () -> movieService.createMovie(requestDto)
         );
 
-        assertTrue(exception.getMessage().contains("releaseYear must be between 1888"));
+        assertTrue(exception.getMessage().contains("releaseYear must be between " + MOVIE_MIN_YEAR));
 
         verifyNoInteractions(genreRepository);
         verifyNoInteractions(movieRepository);
@@ -555,7 +553,7 @@ class MovieServiceTest
                 () -> movieService.updateMovie(5L, requestDto)
         );
 
-        assertTrue(exception.getMessage().contains("releaseYear must be between 1888"));
+        assertTrue(exception.getMessage().contains("releaseYear must be between " + MOVIE_MIN_YEAR));
 
         verifyNoInteractions(movieRepository);
         verifyNoInteractions(genreRepository);

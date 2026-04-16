@@ -7,20 +7,17 @@ import com.metumxs.filmlibraryapi.domain.entity.User;
 import com.metumxs.filmlibraryapi.domain.repository.RoleRepository;
 import com.metumxs.filmlibraryapi.domain.repository.UserRepository;
 import com.metumxs.filmlibraryapi.exception.ConflictException;
-
+import com.metumxs.filmlibraryapi.security.JwtTokenService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import java.time.LocalDateTime;
 import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -36,12 +33,18 @@ class AuthServiceTest
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private AuthenticationManager authenticationManager;
+
+    @Mock
+    private JwtTokenService jwtTokenService;
+
     private AuthService authService;
 
     @BeforeEach
     void setUp()
     {
-        authService = new AuthService(userRepository, roleRepository, passwordEncoder);
+        authService = new AuthService(userRepository, roleRepository, passwordEncoder, authenticationManager, jwtTokenService);
     }
 
     @Test
