@@ -30,7 +30,7 @@ public class AuthController
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
-    @GetMapping("/login")
+    @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(
             @RequestBody @Valid LoginRequestDto loginRequestDto
     )

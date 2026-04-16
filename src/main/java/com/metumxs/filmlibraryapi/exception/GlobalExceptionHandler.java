@@ -3,6 +3,8 @@ package com.metumxs.filmlibraryapi.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -187,6 +189,24 @@ public class GlobalExceptionHandler
         return buildErrorResponse(
                 HttpStatus.UNAUTHORIZED,
                 "Invalid email or password",
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler({
+            AccessDeniedException.class,
+            AuthorizationDeniedException.class
+    })
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(
+            Exception exception,
+            HttpServletRequest request
+    )
+    {
+        log.warn("Access denied at {}: {}", request.getRequestURI(), exception.getMessage());
+
+        return buildErrorResponse(
+                HttpStatus.FORBIDDEN,
+                "You do not have permission to access this resource",
                 request.getRequestURI()
         );
     }

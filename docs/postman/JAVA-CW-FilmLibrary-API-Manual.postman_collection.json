@@ -1,0 +1,478 @@
+{
+  "info": {
+    "_postman_id": "c44e30a1-2d0e-494a-b1b6-dabefaccaef1",
+    "name": "JAVA-CW-FilmLibrary-API-Manual",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "40094037"
+  },
+  "item": [
+    {
+      "name": "Movies | All Filters Applied",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/v1/movies?page=0&title=dark&genre=Drama&releaseYear=2020",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "movies"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "title",
+              "value": "dark"
+            },
+            {
+              "key": "genre",
+              "value": "Drama"
+            },
+            {
+              "key": "releaseYear",
+              "value": "2020"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Movies | Details by Id",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "Movies | No Filters Applied",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/v1/movies?page=0",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "movies"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Movies | Admin Create Movie",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"title\": \"Super Anime 2\",\r\n    \"description\": \"Some test anime title.\",\r\n    \"releaseYear\": 2001,\r\n    \"durationMinutes\": 89,\r\n    \"country\": \"Japan\",\r\n    \"genreIds\": [\r\n        \"3\",\r\n        \"6\"\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/v1/admin/movies",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "movies"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Movies | Admin Update Movie",
+      "request": {
+        "auth": {
+          "type": "oauth2",
+          "oauth2": [
+            {
+              "key": "tokenType",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "key": "accessToken",
+              "value": "{{Access Token}}",
+              "type": "string"
+            },
+            {
+              "key": "addTokenTo",
+              "value": "header",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"title\": \"Super Anime 3\",\r\n    \"description\": \"Some test anime title.\",\r\n    \"releaseYear\": \"2001\",\r\n    \"durationMinutes\": 89,\r\n    \"country\": \"Japan\",\r\n    \"genreIds\": [\r\n        3,\r\n        6\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/v1/admin/movies/8",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "movies",
+            "8"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Movies | Admin Delete Movie",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/v1/admin/movies/8",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "movies",
+            "8"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Auth | Register | Certain Fail",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"test_user_1\",\r\n    \"email\": \"testuser1@example.com\",\r\n    \"password\": \"superpass123\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/v1/auth/register",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Auth | Register",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"\",\r\n    \"email\": \"\",\r\n    \"password\": \"\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/v1/auth/register",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Auth | Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();\r",
+              "\r",
+              "var token = jsonData.accessToken; \r",
+              "\r",
+              "if (token)\r",
+              "{\r",
+              "    pm.collectionVariables.set(\"Access Token\", token);\r",
+              "    console.log(\"Token has been saved to collection variables!\");\r",
+              "} \r",
+              "else\r",
+              "{\r",
+              "    console.error(\"Token not found in response! Check the field name (e.g., 'token' or 'accessToken')\");\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"\",\r\n    \"password\": \"\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/v1/auth/login",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Auth | Login User | Certain Success",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();\r",
+              "\r",
+              "var token = jsonData.accessToken; \r",
+              "\r",
+              "if (token)\r",
+              "{\r",
+              "    pm.collectionVariables.set(\"Access Token\", token);\r",
+              "    console.log(\"Token has been saved to collection variables!\");\r",
+              "} \r",
+              "else\r",
+              "{\r",
+              "    console.error(\"Token not found in response! Check the field name (e.g., 'token' or 'accessToken')\");\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"testuser1@example.com\",\r\n    \"password\": \"superpass123\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/v1/auth/login",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Auth | Login Admin | Certain Success",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();\r",
+              "\r",
+              "var token = jsonData.accessToken; \r",
+              "\r",
+              "if (token)\r",
+              "{\r",
+              "    pm.collectionVariables.set(\"Access Token\", token);\r",
+              "    console.log(\"Token has been saved to collection variables!\");\r",
+              "} \r",
+              "else\r",
+              "{\r",
+              "    console.error(\"Token not found in response! Check the field name (e.g., 'token' or 'accessToken')\");\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"admin@example.com\",\r\n    \"password\": \"adminpass\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/v1/auth/login",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "LOG OUT (REMOVE ACCESS TOKEN)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.collectionVariables.set(\"Access Token\", \"\");\r",
+              "console.log(\"Token has been erased!\");"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080"
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "Access Token",
+      "value": ""
+    }
+  ]
+}
