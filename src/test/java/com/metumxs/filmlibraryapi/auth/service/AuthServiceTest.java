@@ -1,5 +1,7 @@
 package com.metumxs.filmlibraryapi.auth.service;
 
+import com.metumxs.filmlibraryapi.auth.dto.LoginRequestDto;
+import com.metumxs.filmlibraryapi.auth.dto.LoginResponseDto;
 import com.metumxs.filmlibraryapi.auth.dto.RegistrationRequestDto;
 import com.metumxs.filmlibraryapi.auth.dto.RegistrationResponseDto;
 import com.metumxs.filmlibraryapi.domain.entity.Role;
@@ -8,6 +10,7 @@ import com.metumxs.filmlibraryapi.domain.repository.RoleRepository;
 import com.metumxs.filmlibraryapi.domain.repository.UserRepository;
 import com.metumxs.filmlibraryapi.exception.ConflictException;
 import com.metumxs.filmlibraryapi.security.JwtTokenService;
+import com.metumxs.filmlibraryapi.security.SecurityUserDetails;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +18,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -44,7 +50,13 @@ class AuthServiceTest
     @BeforeEach
     void setUp()
     {
-        authService = new AuthService(userRepository, roleRepository, passwordEncoder, authenticationManager, jwtTokenService);
+        authService = new AuthService(
+                userRepository,
+                roleRepository,
+                passwordEncoder,
+                authenticationManager,
+                jwtTokenService
+        );
     }
 
     @Test
@@ -102,6 +114,8 @@ class AuthServiceTest
         verify(userRepository).existsByEmail("serhii@example.com");
         verify(roleRepository).findByName("USER");
         verify(passwordEncoder).encode("strongPass123");
+        verifyNoInteractions(authenticationManager);
+        verifyNoInteractions(jwtTokenService);
     }
 
     @Test
@@ -129,6 +143,8 @@ class AuthServiceTest
         verifyNoInteractions(roleRepository);
         verifyNoInteractions(passwordEncoder);
         verify(userRepository, never()).save(any());
+        verifyNoInteractions(authenticationManager);
+        verifyNoInteractions(jwtTokenService);
     }
 
     @Test
@@ -154,6 +170,8 @@ class AuthServiceTest
         verify(roleRepository).findByName("USER");
         verifyNoInteractions(passwordEncoder);
         verify(userRepository, never()).save(any());
+        verifyNoInteractions(authenticationManager);
+        verifyNoInteractions(jwtTokenService);
     }
 
     @Test
@@ -192,6 +210,9 @@ class AuthServiceTest
         User capturedUser = userCaptor.getValue();
         assertEquals("Serhii Khomenko", capturedUser.getName());
         assertEquals("serhii@example.com", capturedUser.getEmail());
+
+        verifyNoInteractions(authenticationManager);
+        verifyNoInteractions(jwtTokenService);
     }
 
     @Test
@@ -229,5 +250,150 @@ class AuthServiceTest
         assertNotEquals("plainPassword123", capturedUser.getPasswordHash());
 
         verify(passwordEncoder).encode("plainPassword123");
+        verifyNoInteractions(authenticationManager);
+        verifyNoInteractions(jwtTokenService);
+    }
+
+    @Test
+    void login_shouldReturnAccessTokenSuccessfully()
+    {
+        LoginRequestDto requestDto = new LoginRequestDto(
+                "serhii@example.com",
+                "strongPass123"
+        );
+
+        SecurityUserDetails userDetails = new SecurityUserDetails(
+                1L,
+                "serhii@example.com",
+                "hashed-password",
+                "USER"
+        );
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.getAuthorities()
+        );
+
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(authentication);
+        when(jwtTokenService.generateAccessToken(userDetails))
+                .thenReturn("jwt-token-value");
+        when(jwtTokenService.getAccessTokenExpiresInSeconds())
+                .thenReturn(3600L);
+
+        LoginResponseDto result = authService.login(requestDto);
+
+        assertNotNull(result);
+        assertEquals("jwt-token-value", result.accessToken());
+        assertEquals("Bearer", result.tokenType());
+        assertEquals(3600L, result.expiresInSeconds());
+
+        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(jwtTokenService).generateAccessToken(userDetails);
+        verify(jwtTokenService).getAccessTokenExpiresInSeconds();
+        verifyNoInteractions(userRepository);
+        verifyNoInteractions(roleRepository);
+    }
+
+    @Test
+    void login_shouldNormalizeEmailBeforeAuthentication()
+    {
+        LoginRequestDto requestDto = new LoginRequestDto(
+                "  SERHII@EXAMPLE.COM  ",
+                "strongPass123"
+        );
+
+        SecurityUserDetails userDetails = new SecurityUserDetails(
+                1L,
+                "serhii@example.com",
+                "hashed-password",
+                "USER"
+        );
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.getAuthorities()
+        );
+
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(authentication);
+        when(jwtTokenService.generateAccessToken(userDetails))
+                .thenReturn("jwt-token-value");
+        when(jwtTokenService.getAccessTokenExpiresInSeconds())
+                .thenReturn(3600L);
+
+        authService.login(requestDto);
+
+        ArgumentCaptor<UsernamePasswordAuthenticationToken> authenticationCaptor =
+                ArgumentCaptor.forClass(UsernamePasswordAuthenticationToken.class);
+
+        verify(authenticationManager).authenticate(authenticationCaptor.capture());
+
+        UsernamePasswordAuthenticationToken capturedToken = authenticationCaptor.getValue();
+        assertEquals("serhii@example.com", capturedToken.getPrincipal());
+        assertEquals("strongPass123", capturedToken.getCredentials());
+    }
+
+    @Test
+    void login_shouldThrowAuthenticationException_whenCredentialsAreInvalid()
+    {
+        LoginRequestDto requestDto = new LoginRequestDto(
+                "serhii@example.com",
+                "wrongPassword"
+        );
+
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(new BadCredentialsException("Bad credentials"));
+
+        BadCredentialsException exception = assertThrows(
+                BadCredentialsException.class,
+                () -> authService.login(requestDto)
+        );
+
+        assertEquals("Bad credentials", exception.getMessage());
+
+        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(jwtTokenService, never()).generateAccessToken(any());
+        verify(jwtTokenService, never()).getAccessTokenExpiresInSeconds();
+        verifyNoInteractions(userRepository);
+        verifyNoInteractions(roleRepository);
+    }
+
+    @Test
+    void login_shouldGenerateTokenUsingAuthenticatedPrincipal()
+    {
+        LoginRequestDto requestDto = new LoginRequestDto(
+                "serhii@example.com",
+                "strongPass123"
+        );
+
+        SecurityUserDetails userDetails = new SecurityUserDetails(
+                99L,
+                "serhii@example.com",
+                "hashed-password",
+                "ADMIN"
+        );
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.getAuthorities()
+        );
+
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(authentication);
+        when(jwtTokenService.generateAccessToken(userDetails))
+                .thenReturn("admin-jwt-token");
+        when(jwtTokenService.getAccessTokenExpiresInSeconds())
+                .thenReturn(3600L);
+
+        LoginResponseDto result = authService.login(requestDto);
+
+        assertEquals("admin-jwt-token", result.accessToken());
+
+        verify(jwtTokenService).generateAccessToken(userDetails);
+        verify(jwtTokenService).getAccessTokenExpiresInSeconds();
     }
 }
