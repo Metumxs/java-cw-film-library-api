@@ -32,6 +32,13 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class MovieServiceTest
 {
+    private static final Long TEST_MOVIE_ID = 1L;
+    private static final String TEST_MOVIE_TITLE = "The Dark Knight";
+    private static final Integer TEST_MOVIE_YEAR = 2008;
+    private static final Double TEST_AVERAGE_RATING = 9.2;
+    private static final Long TEST_RATINGS_COUNT = 1250L;
+    private static final Long NON_EXISTENT_MOVIE_ID = 999999999999L;
+
     @Mock
     private MovieRepository movieRepository;
 
@@ -46,10 +53,19 @@ class MovieServiceTest
 
     private MovieService movieService;
 
+    private Movie testMovie;
+    private Genre dramaGenre;
+    private Genre mysteryGenre;
+
     @BeforeEach
     void setUp()
     {
-        movieService = new MovieService(movieRepository, ratingRepository, movieMapper,  genreRepository);
+        movieService = new MovieService(movieRepository, ratingRepository, movieMapper, genreRepository);
+
+        testMovie = buildMovie(TEST_MOVIE_ID, TEST_MOVIE_TITLE, TEST_MOVIE_YEAR);
+
+        dramaGenre = buildGenre(1L, "Drama");
+        mysteryGenre = buildGenre(2L, "Mystery");
     }
 
     @Test
@@ -79,23 +95,21 @@ class MovieServiceTest
     @Test
     void getMovies_shouldReturnMappedMoviePageWithRatings()
     {
-        Movie movie = buildMovie(1L, "The Dark Knight", 2008);
-
         Page<Movie> moviePage = new PageImpl<>(
-                List.of(movie),
+                List.of(testMovie),
                 PageRequest.of(0, 20, Sort.by(Sort.Direction.ASC, "title")),
                 1
         );
 
-        MovieRatingSummaryProjection movieRatingSummary = new TestMovieRatingSummaryProjection(1L, 9.2, 1250L);
+        MovieRatingSummaryProjection movieRatingSummary = new TestMovieRatingSummaryProjection(TEST_MOVIE_ID, TEST_AVERAGE_RATING, TEST_RATINGS_COUNT);
 
         MovieSummaryResponseDto responseDto = new MovieSummaryResponseDto(
-                1L,
-                "The Dark Knight",
-                2008,
+                TEST_MOVIE_ID,
+                TEST_MOVIE_TITLE,
+                TEST_MOVIE_YEAR,
                 Set.of("Action", "Drama"),
-                9.2,
-                1250L
+                TEST_AVERAGE_RATING,
+                TEST_RATINGS_COUNT
         );
 
         when(movieRepository.findAll(
@@ -103,43 +117,41 @@ class MovieServiceTest
                 any(Pageable.class)
         )).thenReturn(moviePage);
 
-        when(ratingRepository.findRatingSummariesByMovieIds(List.of(1L)))
+        when(ratingRepository.findRatingSummariesByMovieIds(List.of(TEST_MOVIE_ID)))
                 .thenReturn(List.of(movieRatingSummary));
 
-        when(movieMapper.toSummaryResponseDto(movie, 9.2, 1250L))
+        when(movieMapper.toSummaryResponseDto(testMovie, TEST_AVERAGE_RATING, TEST_RATINGS_COUNT))
                 .thenReturn(responseDto);
 
-        Page<MovieSummaryResponseDto> result = movieService.getMovies(0, 20, "dark", "Drama", 2008);
+        Page<MovieSummaryResponseDto> result = movieService.getMovies(0, 20, "dark", "Drama", TEST_MOVIE_YEAR);
 
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
-        assertEquals("The Dark Knight", result.getContent().getFirst().title());
-        assertEquals(9.2, result.getContent().getFirst().averageRating());
-        assertEquals(1250L, result.getContent().getFirst().ratingsCount());
+        assertEquals(TEST_MOVIE_TITLE, result.getContent().getFirst().title());
+        assertEquals(TEST_AVERAGE_RATING, result.getContent().getFirst().averageRating());
+        assertEquals(TEST_RATINGS_COUNT, result.getContent().getFirst().ratingsCount());
 
         verify(movieRepository).findAll(
                 ArgumentMatchers.<Specification<Movie>>any(),
                 any(Pageable.class)
         );
-        verify(ratingRepository).findRatingSummariesByMovieIds(List.of(1L));
-        verify(movieMapper).toSummaryResponseDto(movie, 9.2, 1250L);
+        verify(ratingRepository).findRatingSummariesByMovieIds(List.of(TEST_MOVIE_ID));
+        verify(movieMapper).toSummaryResponseDto(testMovie, TEST_AVERAGE_RATING, TEST_RATINGS_COUNT);
     }
 
     @Test
     void getMovies_shouldReturnMappedMoviePageWithNullRatingAndZeroCount_whenNoRatingSummaryExists()
     {
-        Movie movie = buildMovie(1L, "Interstellar", 2014);
-
         Page<Movie> moviePage = new PageImpl<>(
-                List.of(movie),
+                List.of(testMovie),
                 PageRequest.of(0, 20, Sort.by(Sort.Direction.ASC, "title")),
                 1
         );
 
         MovieSummaryResponseDto responseDto = new MovieSummaryResponseDto(
-                1L,
-                "Interstellar",
-                2014,
+                TEST_MOVIE_ID,
+                TEST_MOVIE_TITLE,
+                TEST_MOVIE_YEAR,
                 Set.of("Drama", "Sci-Fi"),
                 null,
                 0L
@@ -150,22 +162,22 @@ class MovieServiceTest
                 any(Pageable.class)
         )).thenReturn(moviePage);
 
-        when(ratingRepository.findRatingSummariesByMovieIds(List.of(1L)))
+        when(ratingRepository.findRatingSummariesByMovieIds(List.of(TEST_MOVIE_ID)))
                 .thenReturn(List.of());
 
-        when(movieMapper.toSummaryResponseDto(movie, null, 0L))
+        when(movieMapper.toSummaryResponseDto(testMovie, null, 0L))
                 .thenReturn(responseDto);
 
         Page<MovieSummaryResponseDto> result = movieService.getMovies(0, 20, null, null, null);
 
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
-        assertEquals("Interstellar", result.getContent().getFirst().title());
+        assertEquals(TEST_MOVIE_TITLE, result.getContent().getFirst().title());
         assertNull(result.getContent().getFirst().averageRating());
         assertEquals(0L, result.getContent().getFirst().ratingsCount());
 
-        verify(ratingRepository).findRatingSummariesByMovieIds(List.of(1L));
-        verify(movieMapper).toSummaryResponseDto(movie, null, 0L);
+        verify(ratingRepository).findRatingSummariesByMovieIds(List.of(TEST_MOVIE_ID));
+        verify(movieMapper).toSummaryResponseDto(testMovie, null, 0L);
     }
 
     @Test
@@ -203,84 +215,81 @@ class MovieServiceTest
     @Test
     void getMovieDetails_shouldReturnMovieDetailsWithRatingSummary()
     {
-        Movie movie = buildMovie(1L, "Inception", 2010);
-        MovieRatingSummaryProjection movieRatingSummary = new TestMovieRatingSummaryProjection(1L, 8.8, 980L);
+        MovieRatingSummaryProjection movieRatingSummary = new TestMovieRatingSummaryProjection(TEST_MOVIE_ID, TEST_AVERAGE_RATING, TEST_RATINGS_COUNT);
 
         MovieDetailsResponseDto responseDto = new MovieDetailsResponseDto(
-                1L,
-                "Inception",
-                "Dream infiltration thriller",
-                2010,
-                148,
+                TEST_MOVIE_ID,
+                TEST_MOVIE_TITLE,
+                "Test description",
+                TEST_MOVIE_YEAR,
+                120,
                 "USA",
-                Set.of("Sci-Fi", "Thriller"),
-                8.8,
-                980L
+                Set.of("Action", "Drama"),
+                TEST_AVERAGE_RATING,
+                TEST_RATINGS_COUNT
         );
 
-        when(movieRepository.findById(1L)).thenReturn(Optional.of(movie));
-        when(ratingRepository.findRatingSummaryByMovieId(1L)).thenReturn(Optional.of(movieRatingSummary));
-        when(movieMapper.toDetailsResponseDto(movie, 8.8, 980L)).thenReturn(responseDto);
+        when(movieRepository.findById(TEST_MOVIE_ID)).thenReturn(Optional.of(testMovie));
+        when(ratingRepository.findRatingSummaryByMovieId(TEST_MOVIE_ID)).thenReturn(Optional.of(movieRatingSummary));
+        when(movieMapper.toDetailsResponseDto(testMovie, TEST_AVERAGE_RATING, TEST_RATINGS_COUNT)).thenReturn(responseDto);
 
-        MovieDetailsResponseDto result = movieService.getMovieDetails(1L);
+        MovieDetailsResponseDto result = movieService.getMovieDetails(TEST_MOVIE_ID);
 
         assertNotNull(result);
-        assertEquals(1L, result.id());
-        assertEquals("Inception", result.title());
-        assertEquals(8.8, result.averageRating());
-        assertEquals(980L, result.ratingsCount());
+        assertEquals(TEST_MOVIE_ID, result.id());
+        assertEquals(TEST_MOVIE_TITLE, result.title());
+        assertEquals(TEST_AVERAGE_RATING, result.averageRating());
+        assertEquals(TEST_RATINGS_COUNT, result.ratingsCount());
 
-        verify(movieRepository).findById(1L);
-        verify(ratingRepository).findRatingSummaryByMovieId(1L);
-        verify(movieMapper).toDetailsResponseDto(movie, 8.8, 980L);
+        verify(movieRepository).findById(TEST_MOVIE_ID);
+        verify(ratingRepository).findRatingSummaryByMovieId(TEST_MOVIE_ID);
+        verify(movieMapper).toDetailsResponseDto(testMovie, TEST_AVERAGE_RATING, TEST_RATINGS_COUNT);
     }
 
     @Test
     void getMovieDetails_shouldReturnMovieDetailsWithNullRatingAndZeroCount_whenNoRatingSummaryExists()
     {
-        Movie movie = buildMovie(2L, "Parasite", 2019);
-
         MovieDetailsResponseDto responseDto = new MovieDetailsResponseDto(
-                2L,
-                "Parasite",
-                "A poor family infiltrates a wealthy household",
-                2019,
-                132,
-                "South Korea",
-                Set.of("Drama", "Thriller"),
+                TEST_MOVIE_ID,
+                TEST_MOVIE_TITLE,
+                "Test description",
+                TEST_MOVIE_YEAR,
+                120,
+                "USA",
+                Set.of("Drama", "Sci-Fi"),
                 null,
                 0L
         );
 
-        when(movieRepository.findById(2L)).thenReturn(Optional.of(movie));
-        when(ratingRepository.findRatingSummaryByMovieId(2L)).thenReturn(Optional.empty());
-        when(movieMapper.toDetailsResponseDto(movie, null, 0L)).thenReturn(responseDto);
+        when(movieRepository.findById(TEST_MOVIE_ID)).thenReturn(Optional.of(testMovie));
+        when(ratingRepository.findRatingSummaryByMovieId(TEST_MOVIE_ID)).thenReturn(Optional.empty());
+        when(movieMapper.toDetailsResponseDto(testMovie, null, 0L)).thenReturn(responseDto);
 
-        MovieDetailsResponseDto result = movieService.getMovieDetails(2L);
+        MovieDetailsResponseDto result = movieService.getMovieDetails(TEST_MOVIE_ID);
 
         assertNotNull(result);
-        assertEquals(2L, result.id());
+        assertEquals(TEST_MOVIE_ID, result.id());
         assertNull(result.averageRating());
         assertEquals(0L, result.ratingsCount());
 
-        verify(movieRepository).findById(2L);
-        verify(ratingRepository).findRatingSummaryByMovieId(2L);
-        verify(movieMapper).toDetailsResponseDto(movie, null, 0L);
+        verify(movieRepository).findById(TEST_MOVIE_ID);
+        verify(ratingRepository).findRatingSummaryByMovieId(TEST_MOVIE_ID);
+        verify(movieMapper).toDetailsResponseDto(testMovie, null, 0L);
     }
 
     @Test
     void getMovieDetails_shouldThrowNotFoundException_whenMovieDoesNotExist()
     {
-        when(movieRepository.findById(999L)).thenReturn(Optional.empty());
+        when(movieRepository.findById(NON_EXISTENT_MOVIE_ID)).thenReturn(Optional.empty());
 
         NotFoundException exception = assertThrows(
                 NotFoundException.class,
-                () -> movieService.getMovieDetails(999L)
+                () -> movieService.getMovieDetails(NON_EXISTENT_MOVIE_ID)
         );
 
-        assertEquals("Movie with id 999 not found", exception.getMessage());
+        assertEquals("Movie with id " + NON_EXISTENT_MOVIE_ID + " not found", exception.getMessage());
 
-        verify(movieRepository).findById(999L);
+        verify(movieRepository).findById(NON_EXISTENT_MOVIE_ID);
         verifyNoInteractions(ratingRepository);
         verifyNoInteractions(movieMapper);
     }
@@ -297,12 +306,9 @@ class MovieServiceTest
                 Set.of(1L, 2L)
         );
 
-        Genre drama = buildGenre(1L, "Drama");
-        Genre mystery = buildGenre(2L, "Mystery");
-
         Movie movieToSave = new Movie();
         Movie savedMovie = buildMovie(10L, "The Prestige", 2006);
-        savedMovie.setGenres(Set.of(drama, mystery));
+        savedMovie.setGenres(Set.of(dramaGenre, mysteryGenre));
 
         MovieDetailsResponseDto responseDto = new MovieDetailsResponseDto(
                 10L,
@@ -317,7 +323,7 @@ class MovieServiceTest
         );
 
         when(genreRepository.findAllById(requestDto.genreIds()))
-                .thenReturn(List.of(drama, mystery));
+                .thenReturn(List.of(dramaGenre, mysteryGenre));
         when(movieMapper.toEntity(requestDto))
                 .thenReturn(movieToSave);
         when(movieRepository.save(movieToSave))
@@ -381,10 +387,8 @@ class MovieServiceTest
                 Set.of(1L, 2L)
         );
 
-        Genre drama = buildGenre(1L, "Drama");
-
         when(genreRepository.findAllById(requestDto.genreIds()))
-                .thenReturn(List.of(drama));
+                .thenReturn(List.of(dramaGenre));
 
         BadRequestException exception = assertThrows(
                 BadRequestException.class,
@@ -436,43 +440,38 @@ class MovieServiceTest
                 Set.of(1L, 2L)
         );
 
-        Movie existingMovie = buildMovie(5L, "Old Title", 2005);
-
-        Genre drama = buildGenre(1L, "Drama");
-        Genre thriller = buildGenre(2L, "Thriller");
-
-        Movie updatedMovie = buildMovie(5L, "Updated Title", 2010);
-        updatedMovie.setGenres(Set.of(drama, thriller));
+        Movie updatedMovie = buildMovie(TEST_MOVIE_ID, "Updated Title", 2010);
+        updatedMovie.setGenres(Set.of(dramaGenre, mysteryGenre));
 
         MovieDetailsResponseDto responseDto = new MovieDetailsResponseDto(
-                5L,
+                TEST_MOVIE_ID,
                 "Updated Title",
                 "Updated description",
                 2010,
                 140,
                 "USA",
-                Set.of("Drama", "Thriller"),
+                Set.of("Drama", "Mystery"),
                 null,
                 0L
         );
 
-        when(movieRepository.findById(5L)).thenReturn(Optional.of(existingMovie));
+        when(movieRepository.findById(TEST_MOVIE_ID)).thenReturn(Optional.of(testMovie));
         when(genreRepository.findAllById(requestDto.genreIds()))
-                .thenReturn(List.of(drama, thriller));
-        when(movieRepository.save(existingMovie)).thenReturn(updatedMovie);
-        when(ratingRepository.findRatingSummaryByMovieId(5L)).thenReturn(Optional.empty());
+                .thenReturn(List.of(dramaGenre, mysteryGenre));
+        when(movieRepository.save(testMovie)).thenReturn(updatedMovie);
+        when(ratingRepository.findRatingSummaryByMovieId(TEST_MOVIE_ID)).thenReturn(Optional.empty());
         when(movieMapper.toDetailsResponseDto(updatedMovie, null, 0L)).thenReturn(responseDto);
 
-        MovieDetailsResponseDto result = movieService.updateMovie(5L, requestDto);
+        MovieDetailsResponseDto result = movieService.updateMovie(TEST_MOVIE_ID, requestDto);
         assertNotNull(result);
-        assertEquals(5L, result.id());
+        assertEquals(TEST_MOVIE_ID, result.id());
         assertEquals("Updated Title", result.title());
 
-        verify(movieRepository).findById(5L);
+        verify(movieRepository).findById(TEST_MOVIE_ID);
         verify(genreRepository).findAllById(requestDto.genreIds());
-        verify(movieMapper).updateEntityFromDto(requestDto, existingMovie);
-        verify(movieRepository).save(existingMovie);
-        verify(ratingRepository).findRatingSummaryByMovieId(5L);
+        verify(movieMapper).updateEntityFromDto(requestDto, testMovie);
+        verify(movieRepository).save(testMovie);
+        verify(ratingRepository).findRatingSummaryByMovieId(TEST_MOVIE_ID);
         verify(movieMapper).toDetailsResponseDto(updatedMovie, null, 0L);
     }
 
@@ -488,16 +487,16 @@ class MovieServiceTest
                 Set.of(1L)
         );
 
-        when(movieRepository.findById(999L)).thenReturn(Optional.empty());
+        when(movieRepository.findById(NON_EXISTENT_MOVIE_ID)).thenReturn(Optional.empty());
 
         NotFoundException exception = assertThrows(
                 NotFoundException.class,
-                () -> movieService.updateMovie(999L, requestDto)
+                () -> movieService.updateMovie(NON_EXISTENT_MOVIE_ID, requestDto)
         );
 
-        assertEquals("Movie with id 999 not found", exception.getMessage());
+        assertEquals("Movie with id " + NON_EXISTENT_MOVIE_ID + " not found", exception.getMessage());
 
-        verify(movieRepository).findById(999L);
+        verify(movieRepository).findById(NON_EXISTENT_MOVIE_ID);
         verifyNoInteractions(genreRepository);
         verifyNoInteractions(ratingRepository);
         verifyNoInteractions(movieMapper);
@@ -515,21 +514,18 @@ class MovieServiceTest
                 Set.of(1L, 2L)
         );
 
-        Movie existingMovie = buildMovie(5L, "Old Title", 2005);
-        Genre drama = buildGenre(1L, "Drama");
-
-        when(movieRepository.findById(5L)).thenReturn(Optional.of(existingMovie));
+        when(movieRepository.findById(TEST_MOVIE_ID)).thenReturn(Optional.of(testMovie));
         when(genreRepository.findAllById(requestDto.genreIds()))
-                .thenReturn(List.of(drama));
+                .thenReturn(List.of(dramaGenre));
 
         BadRequestException exception = assertThrows(
                 BadRequestException.class,
-                () -> movieService.updateMovie(5L, requestDto)
+                () -> movieService.updateMovie(TEST_MOVIE_ID, requestDto)
         );
 
         assertEquals("One or more genreIds are invalid", exception.getMessage());
 
-        verify(movieRepository).findById(5L);
+        verify(movieRepository).findById(TEST_MOVIE_ID);
         verify(genreRepository).findAllById(requestDto.genreIds());
         verify(movieMapper, never()).updateEntityFromDto(any(), any());
         verify(movieRepository, never()).save(any());
@@ -550,7 +546,7 @@ class MovieServiceTest
 
         BadRequestException exception = assertThrows(
                 BadRequestException.class,
-                () -> movieService.updateMovie(5L, requestDto)
+                () -> movieService.updateMovie(TEST_MOVIE_ID, requestDto)
         );
 
         assertTrue(exception.getMessage().contains("releaseYear must be between " + MOVIE_MIN_YEAR));
@@ -564,14 +560,12 @@ class MovieServiceTest
     @Test
     void deleteMovie_shouldDeleteMovieSuccessfully()
     {
-        Movie movie = buildMovie(7L, "Interstellar", 2014);
+        when(movieRepository.findById(TEST_MOVIE_ID)).thenReturn(Optional.of(testMovie));
 
-        when(movieRepository.findById(7L)).thenReturn(Optional.of(movie));
+        assertDoesNotThrow(() -> movieService.deleteMovie(TEST_MOVIE_ID));
 
-        assertDoesNotThrow(() -> movieService.deleteMovie(7L));
-
-        verify(movieRepository).findById(7L);
-        verify(movieRepository).delete(movie);
+        verify(movieRepository).findById(TEST_MOVIE_ID);
+        verify(movieRepository).delete(testMovie);
         verifyNoInteractions(genreRepository);
         verifyNoInteractions(ratingRepository);
         verifyNoInteractions(movieMapper);
@@ -580,16 +574,16 @@ class MovieServiceTest
     @Test
     void deleteMovie_shouldThrowNotFoundException_whenMovieDoesNotExist()
     {
-        when(movieRepository.findById(777L)).thenReturn(Optional.empty());
+        when(movieRepository.findById(NON_EXISTENT_MOVIE_ID)).thenReturn(Optional.empty());
 
         NotFoundException exception = assertThrows(
                 NotFoundException.class,
-                () -> movieService.deleteMovie(777L)
+                () -> movieService.deleteMovie(NON_EXISTENT_MOVIE_ID)
         );
 
-        assertEquals("Movie with id 777 not found", exception.getMessage());
+        assertEquals("Movie with id " + NON_EXISTENT_MOVIE_ID + " not found", exception.getMessage());
 
-        verify(movieRepository).findById(777L);
+        verify(movieRepository).findById(NON_EXISTENT_MOVIE_ID);
         verify(movieRepository, never()).delete(any(Movie.class));
         verifyNoInteractions(genreRepository);
         verifyNoInteractions(ratingRepository);

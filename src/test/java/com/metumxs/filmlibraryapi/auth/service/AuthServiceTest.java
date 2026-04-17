@@ -30,6 +30,13 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest
 {
+    private static final String TEST_NAME = "Serhii";
+    private static final String TEST_EMAIL = "serhii@example.com";
+    private static final String TEST_PASSWORD = "strongPass123";
+    private static final String HASHED_PASSWORD = "hashed-password";
+    private static final String ROLE_USER = "USER";
+    private static final Long TEST_USER_ID = 10L;
+
     @Mock
     private UserRepository userRepository;
 
@@ -47,6 +54,8 @@ class AuthServiceTest
 
     private AuthService authService;
 
+    private Role defaultRole;
+
     @BeforeEach
     void setUp()
     {
@@ -57,63 +66,61 @@ class AuthServiceTest
                 authenticationManager,
                 jwtTokenService
         );
+
+        defaultRole = new Role();
+        defaultRole.setId(1L);
+        defaultRole.setName(ROLE_USER);
     }
 
     @Test
     void register_shouldRegisterUserSuccessfully()
     {
         RegistrationRequestDto requestDto = new RegistrationRequestDto(
-                "  Serhii  ",
-                "  Serhii@Example.COM  ",
-                "strongPass123"
+                TEST_NAME,
+                TEST_EMAIL,
+                TEST_PASSWORD
         );
-
-        Role userRole = new Role();
-        userRole.setId(1L);
-        userRole.setName("USER");
 
         LocalDateTime createdAt = LocalDateTime.of(2026, 4, 14, 20, 0);
 
-        when(userRepository.existsByEmail("serhii@example.com")).thenReturn(false);
-        when(roleRepository.findByName("USER")).thenReturn(Optional.of(userRole));
-        when(passwordEncoder.encode("strongPass123")).thenReturn("hashed-password");
+        when(userRepository.existsByEmail(TEST_EMAIL)).thenReturn(false);
+        when(roleRepository.findByName(ROLE_USER)).thenReturn(Optional.of(defaultRole));
+        when(passwordEncoder.encode(TEST_PASSWORD)).thenReturn(HASHED_PASSWORD);
 
         when(userRepository.save(any(User.class))).thenAnswer(invocation ->
         {
             User userToSave = invocation.getArgument(0);
-
             User savedUser = new User();
-            savedUser.setId(10L);
+            savedUser.setId(TEST_USER_ID);
             savedUser.setName(userToSave.getName());
             savedUser.setEmail(userToSave.getEmail());
             savedUser.setPasswordHash(userToSave.getPasswordHash());
             savedUser.setRole(userToSave.getRole());
             savedUser.setCreatedAt(createdAt);
-
             return savedUser;
         });
 
         RegistrationResponseDto result = authService.register(requestDto);
 
         assertNotNull(result);
-        assertEquals(10L, result.id());
-        assertEquals("Serhii", result.name());
-        assertEquals("serhii@example.com", result.email());
-        assertEquals("USER", result.role());
+        assertEquals(TEST_USER_ID, result.id());
+        assertEquals(TEST_NAME, result.name());
+        assertEquals(TEST_EMAIL, result.email());
+        assertEquals(ROLE_USER, result.role());
         assertEquals(createdAt, result.createdAt());
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());
 
         User capturedUser = userCaptor.getValue();
-        assertEquals("Serhii", capturedUser.getName());
-        assertEquals("serhii@example.com", capturedUser.getEmail());
-        assertEquals("hashed-password", capturedUser.getPasswordHash());
-        assertEquals(userRole, capturedUser.getRole());
+        assertEquals(TEST_NAME, capturedUser.getName());
+        assertEquals(TEST_EMAIL, capturedUser.getEmail());
+        assertEquals(HASHED_PASSWORD, capturedUser.getPasswordHash());
+        assertEquals(defaultRole, capturedUser.getRole());
 
-        verify(userRepository).existsByEmail("serhii@example.com");
-        verify(roleRepository).findByName("USER");
-        verify(passwordEncoder).encode("strongPass123");
+        verify(userRepository).existsByEmail(TEST_EMAIL);
+        verify(roleRepository).findByName(ROLE_USER);
+        verify(passwordEncoder).encode(TEST_PASSWORD);
         verifyNoInteractions(authenticationManager);
         verifyNoInteractions(jwtTokenService);
     }
@@ -122,12 +129,12 @@ class AuthServiceTest
     void register_shouldThrowConflictException_whenEmailAlreadyExists()
     {
         RegistrationRequestDto requestDto = new RegistrationRequestDto(
-                "Serhii",
-                "serhii@example.com",
-                "strongPass123"
+                TEST_NAME,
+                TEST_EMAIL,
+                TEST_PASSWORD
         );
 
-        when(userRepository.existsByEmail("serhii@example.com")).thenReturn(true);
+        when(userRepository.existsByEmail(TEST_EMAIL)).thenReturn(true);
 
         ConflictException exception = assertThrows(
                 ConflictException.class,
@@ -135,11 +142,11 @@ class AuthServiceTest
         );
 
         assertEquals(
-                "User with email serhii@example.com already exists",
+                "User with email " + TEST_EMAIL + " already exists",
                 exception.getMessage()
         );
 
-        verify(userRepository).existsByEmail("serhii@example.com");
+        verify(userRepository).existsByEmail(TEST_EMAIL);
         verifyNoInteractions(roleRepository);
         verifyNoInteractions(passwordEncoder);
         verify(userRepository, never()).save(any());
@@ -151,23 +158,23 @@ class AuthServiceTest
     void register_shouldThrowIllegalStateException_whenDefaultUserRoleIsMissing()
     {
         RegistrationRequestDto requestDto = new RegistrationRequestDto(
-                "Serhii",
-                "serhii@example.com",
-                "strongPass123"
+                TEST_NAME,
+                TEST_EMAIL,
+                TEST_PASSWORD
         );
 
-        when(userRepository.existsByEmail("serhii@example.com")).thenReturn(false);
-        when(roleRepository.findByName("USER")).thenReturn(Optional.empty());
+        when(userRepository.existsByEmail(TEST_EMAIL)).thenReturn(false);
+        when(roleRepository.findByName(ROLE_USER)).thenReturn(Optional.empty());
 
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
                 () -> authService.register(requestDto)
         );
 
-        assertEquals("Default role USER not found", exception.getMessage());
+        assertEquals("Default role " + ROLE_USER + " not found", exception.getMessage());
 
-        verify(userRepository).existsByEmail("serhii@example.com");
-        verify(roleRepository).findByName("USER");
+        verify(userRepository).existsByEmail(TEST_EMAIL);
+        verify(roleRepository).findByName(ROLE_USER);
         verifyNoInteractions(passwordEncoder);
         verify(userRepository, never()).save(any());
         verifyNoInteractions(authenticationManager);
@@ -177,19 +184,19 @@ class AuthServiceTest
     @Test
     void register_shouldNormalizeNameAndEmailBeforeCheckingAndSaving()
     {
+        String rawName = "  Serhii Khomenko  ";
+        String rawEmail = "  SERHII@EXAMPLE.COM  ";
+        String expectedNormalizedName = "Serhii Khomenko";
+
         RegistrationRequestDto requestDto = new RegistrationRequestDto(
-                "  Serhii Khomenko  ",
-                "  SERHII@EXAMPLE.COM  ",
-                "strongPass123"
+                rawName,
+                rawEmail,
+                TEST_PASSWORD
         );
 
-        Role userRole = new Role();
-        userRole.setId(1L);
-        userRole.setName("USER");
-
-        when(userRepository.existsByEmail("serhii@example.com")).thenReturn(false);
-        when(roleRepository.findByName("USER")).thenReturn(Optional.of(userRole));
-        when(passwordEncoder.encode("strongPass123")).thenReturn("hashed-password");
+        when(userRepository.existsByEmail(TEST_EMAIL)).thenReturn(false);
+        when(roleRepository.findByName(ROLE_USER)).thenReturn(Optional.of(defaultRole));
+        when(passwordEncoder.encode(TEST_PASSWORD)).thenReturn(HASHED_PASSWORD);
 
         when(userRepository.save(any(User.class))).thenAnswer(invocation ->
         {
@@ -201,15 +208,15 @@ class AuthServiceTest
 
         RegistrationResponseDto result = authService.register(requestDto);
 
-        assertEquals("Serhii Khomenko", result.name());
-        assertEquals("serhii@example.com", result.email());
+        assertEquals(expectedNormalizedName, result.name());
+        assertEquals(TEST_EMAIL, result.email());
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());
 
         User capturedUser = userCaptor.getValue();
-        assertEquals("Serhii Khomenko", capturedUser.getName());
-        assertEquals("serhii@example.com", capturedUser.getEmail());
+        assertEquals(expectedNormalizedName, capturedUser.getName());
+        assertEquals(TEST_EMAIL, capturedUser.getEmail());
 
         verifyNoInteractions(authenticationManager);
         verifyNoInteractions(jwtTokenService);
@@ -218,19 +225,18 @@ class AuthServiceTest
     @Test
     void register_shouldUsePasswordEncoderAndStoreHashedPassword()
     {
+        String plainPassword = "plainPassword123";
+        String generatedHash = "secure-hash";
+
         RegistrationRequestDto requestDto = new RegistrationRequestDto(
-                "Serhii",
-                "serhii@example.com",
-                "plainPassword123"
+                TEST_NAME,
+                TEST_EMAIL,
+                plainPassword
         );
 
-        Role userRole = new Role();
-        userRole.setId(1L);
-        userRole.setName("USER");
-
-        when(userRepository.existsByEmail("serhii@example.com")).thenReturn(false);
-        when(roleRepository.findByName("USER")).thenReturn(Optional.of(userRole));
-        when(passwordEncoder.encode("plainPassword123")).thenReturn("secure-hash");
+        when(userRepository.existsByEmail(TEST_EMAIL)).thenReturn(false);
+        when(roleRepository.findByName(ROLE_USER)).thenReturn(Optional.of(defaultRole));
+        when(passwordEncoder.encode(plainPassword)).thenReturn(generatedHash);
 
         when(userRepository.save(any(User.class))).thenAnswer(invocation ->
         {
@@ -246,10 +252,10 @@ class AuthServiceTest
         verify(userRepository).save(userCaptor.capture());
 
         User capturedUser = userCaptor.getValue();
-        assertEquals("secure-hash", capturedUser.getPasswordHash());
-        assertNotEquals("plainPassword123", capturedUser.getPasswordHash());
+        assertEquals(generatedHash, capturedUser.getPasswordHash());
+        assertNotEquals(plainPassword, capturedUser.getPasswordHash());
 
-        verify(passwordEncoder).encode("plainPassword123");
+        verify(passwordEncoder).encode(plainPassword);
         verifyNoInteractions(authenticationManager);
         verifyNoInteractions(jwtTokenService);
     }
@@ -258,15 +264,15 @@ class AuthServiceTest
     void login_shouldReturnAccessTokenSuccessfully()
     {
         LoginRequestDto requestDto = new LoginRequestDto(
-                "serhii@example.com",
-                "strongPass123"
+                TEST_EMAIL,
+                TEST_PASSWORD
         );
 
         CustomUserDetails userDetails = new CustomUserDetails(
                 1L,
-                "serhii@example.com",
-                "hashed-password",
-                "USER"
+                TEST_EMAIL,
+                HASHED_PASSWORD,
+                ROLE_USER
         );
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(
@@ -299,16 +305,18 @@ class AuthServiceTest
     @Test
     void login_shouldNormalizeEmailBeforeAuthentication()
     {
+        String rawEmail = "  SERHII@EXAMPLE.COM  ";
+
         LoginRequestDto requestDto = new LoginRequestDto(
-                "  SERHII@EXAMPLE.COM  ",
-                "strongPass123"
+                rawEmail,
+                TEST_PASSWORD
         );
 
         CustomUserDetails userDetails = new CustomUserDetails(
                 1L,
-                "serhii@example.com",
-                "hashed-password",
-                "USER"
+                TEST_EMAIL,
+                HASHED_PASSWORD,
+                ROLE_USER
         );
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(
@@ -332,15 +340,15 @@ class AuthServiceTest
         verify(authenticationManager).authenticate(authenticationCaptor.capture());
 
         UsernamePasswordAuthenticationToken capturedToken = authenticationCaptor.getValue();
-        assertEquals("serhii@example.com", capturedToken.getPrincipal());
-        assertEquals("strongPass123", capturedToken.getCredentials());
+        assertEquals(TEST_EMAIL, capturedToken.getPrincipal());
+        assertEquals(TEST_PASSWORD, capturedToken.getCredentials());
     }
 
     @Test
     void login_shouldThrowAuthenticationException_whenCredentialsAreInvalid()
     {
         LoginRequestDto requestDto = new LoginRequestDto(
-                "serhii@example.com",
+                TEST_EMAIL,
                 "wrongPassword"
         );
 
@@ -365,14 +373,14 @@ class AuthServiceTest
     void login_shouldGenerateTokenUsingAuthenticatedPrincipal()
     {
         LoginRequestDto requestDto = new LoginRequestDto(
-                "serhii@example.com",
-                "strongPass123"
+                TEST_EMAIL,
+                TEST_PASSWORD
         );
 
         CustomUserDetails userDetails = new CustomUserDetails(
                 99L,
-                "serhii@example.com",
-                "hashed-password",
+                TEST_EMAIL,
+                HASHED_PASSWORD,
                 "ADMIN"
         );
 

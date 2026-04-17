@@ -19,43 +19,53 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class JwtTokenServiceTest
 {
+    private static final Long TEST_USER_ID = 99L;
+    private static final String TEST_EMAIL = "admin@example.com";
+    private static final String TEST_PASSWORD = "hashed-password";
+    private static final String TEST_ROLE = "ADMIN";
+    private static final String EXPECTED_ISSUER = "film-library-api";
+    private static final String MOCK_TOKEN_VALUE = "jwt-token-value";
+    private static final long EXPIRATION_SECONDS = 3600L;
+
     @Mock
     private JwtEncoder jwtEncoder;
 
     private JwtTokenService jwtTokenService;
 
+    private CustomUserDetails testUserDetails;
+
     @BeforeEach
     void setUp()
     {
         jwtTokenService = new JwtTokenService(jwtEncoder);
+
+        testUserDetails = new CustomUserDetails(
+                TEST_USER_ID,
+                TEST_EMAIL,
+                TEST_PASSWORD,
+                TEST_ROLE
+        );
     }
 
     @Test
     void generateAccessToken_shouldBuildJwtWithExpectedClaims()
     {
-        CustomUserDetails userDetails = new CustomUserDetails(
-                99L,
-                "admin@example.com",
-                "hashed-password",
-                "ADMIN"
-        );
-
         Instant issuedAt = Instant.now();
-        Instant expiresAt = issuedAt.plusSeconds(3600);
+        Instant expiresAt = issuedAt.plusSeconds(EXPIRATION_SECONDS);
 
         Jwt encodedJwt = new Jwt(
-                "jwt-token-value",
+                MOCK_TOKEN_VALUE,
                 issuedAt,
                 expiresAt,
                 Map.of("alg", "RS256"),
-                Map.of("sub", "admin@example.com")
+                Map.of("sub", TEST_EMAIL)
         );
 
         when(jwtEncoder.encode(any(JwtEncoderParameters.class))).thenReturn(encodedJwt);
 
-        String token = jwtTokenService.generateAccessToken(userDetails);
+        String token = jwtTokenService.generateAccessToken(testUserDetails);
 
-        assertEquals("jwt-token-value", token);
+        assertEquals(MOCK_TOKEN_VALUE, token);
 
         ArgumentCaptor<JwtEncoderParameters> parametersCaptor =
                 ArgumentCaptor.forClass(JwtEncoderParameters.class);
@@ -65,46 +75,39 @@ class JwtTokenServiceTest
         JwtClaimsSet claimsSet = parametersCaptor.getValue().getClaims();
 
         assertNotNull(claimsSet);
-        assertEquals("film-library-api", claimsSet.getClaimAsString("iss"));
-        assertEquals("admin@example.com", claimsSet.getSubject());
-        assertEquals(99L, (Long) claimsSet.getClaim("userId"));
-        assertEquals("admin@example.com", claimsSet.getClaim("email"));
-        assertEquals("ADMIN", claimsSet.getClaim("role"));
+        assertEquals(EXPECTED_ISSUER, claimsSet.getClaimAsString("iss"));
+        assertEquals(TEST_EMAIL, claimsSet.getSubject());
+        assertEquals(TEST_USER_ID, claimsSet.getClaim("userId"));
+        assertEquals(TEST_EMAIL, claimsSet.getClaim("email"));
+        assertEquals(TEST_ROLE, claimsSet.getClaim("role"));
 
         assertNotNull(claimsSet.getIssuedAt());
         assertNotNull(claimsSet.getExpiresAt());
         assertTrue(claimsSet.getExpiresAt().isAfter(claimsSet.getIssuedAt()));
         assertEquals(
-                3600L,
+                EXPIRATION_SECONDS,
                 Duration.between(claimsSet.getIssuedAt(), claimsSet.getExpiresAt()).getSeconds()
         );
     }
 
     @Test
-    void getAccessTokenExpiresInSeconds_shouldReturn3600()
+    void getAccessTokenExpiresInSeconds_shouldReturnExpectedExpiration()
     {
         long expiresIn = jwtTokenService.getAccessTokenExpiresInSeconds();
 
-        assertEquals(3600L, expiresIn);
+        assertEquals(EXPIRATION_SECONDS, expiresIn);
         verifyNoInteractions(jwtEncoder);
     }
 
     @Test
     void generateAccessToken_shouldThrowIllegalStateException_whenJwtEncoderFails()
     {
-        CustomUserDetails userDetails = new CustomUserDetails(
-                1L,
-                "user@example.com",
-                "hashed-password",
-                "USER"
-        );
-
         when(jwtEncoder.encode(any(JwtEncoderParameters.class)))
                 .thenThrow(new IllegalStateException("JWT encoding failed"));
 
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
-                () -> jwtTokenService.generateAccessToken(userDetails)
+                () -> jwtTokenService.generateAccessToken(testUserDetails)
         );
 
         assertEquals("JWT encoding failed", exception.getMessage());
