@@ -33,7 +33,7 @@ class JwtTokenServiceTest
     @Test
     void generateAccessToken_shouldBuildJwtWithExpectedClaims()
     {
-        SecurityUserDetails userDetails = new SecurityUserDetails(
+        CustomUserDetails userDetails = new CustomUserDetails(
                 99L,
                 "admin@example.com",
                 "hashed-password",
@@ -90,9 +90,9 @@ class JwtTokenServiceTest
     }
 
     @Test
-    void generateAccessToken_shouldPropagateException_whenJwtEncoderFails()
+    void generateAccessToken_shouldThrowIllegalStateException_whenJwtEncoderFails()
     {
-        SecurityUserDetails userDetails = new SecurityUserDetails(
+        CustomUserDetails userDetails = new CustomUserDetails(
                 1L,
                 "user@example.com",
                 "hashed-password",

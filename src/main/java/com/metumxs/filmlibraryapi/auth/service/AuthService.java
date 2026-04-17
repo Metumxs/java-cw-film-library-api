@@ -10,7 +10,7 @@ import com.metumxs.filmlibraryapi.domain.repository.RoleRepository;
 import com.metumxs.filmlibraryapi.domain.repository.UserRepository;
 import com.metumxs.filmlibraryapi.exception.ConflictException;
 import com.metumxs.filmlibraryapi.security.JwtTokenService;
-import com.metumxs.filmlibraryapi.security.SecurityUserDetails;
+import com.metumxs.filmlibraryapi.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -75,7 +75,7 @@ public class AuthService
                 )
         );
 
-        SecurityUserDetails userDetails = (SecurityUserDetails) authentication.getPrincipal();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
         String accessToken = jwtTokenService.generateAccessToken(userDetails);
 

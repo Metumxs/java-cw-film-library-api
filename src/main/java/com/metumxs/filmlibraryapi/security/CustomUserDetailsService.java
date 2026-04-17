@@ -25,7 +25,7 @@ public class CustomUserDetailsService implements UserDetailsService
                         "User with email " + normalizedEmail + " not found"
                 ));
 
-        return new SecurityUserDetails(
+        return new CustomUserDetails(
                 user.getId(),
                 user.getEmail(),
                 user.getPasswordHash(),

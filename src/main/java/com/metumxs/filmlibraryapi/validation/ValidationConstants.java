@@ -17,4 +17,8 @@ public final class ValidationConstants
     public static final int USER_EMAIL_MAX_LENGTH = 255;
     public static final int PASSWORD_MIN_LENGTH = 8;
     public static final int PASSWORD_MAX_LENGTH = 255;
+
+    // --- RATINGS ---
+    public static final int RATING_MIN_VALUE = 1;
+    public static final int RATING_MAX_VALUE = 10;
 }

@@ -15,7 +15,7 @@ public class JwtTokenService
 
     private final JwtEncoder jwtEncoder;
 
-    public String generateAccessToken(SecurityUserDetails userDetails)
+    public String generateAccessToken(CustomUserDetails userDetails)
     {
         Instant now = Instant.now();
 
@@ -23,10 +23,10 @@ public class JwtTokenService
                 .issuer("film-library-api")
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(ACCESS_TOKEN_EXPIRES_IN_SECONDS))
-                .subject(userDetails.getEmail())
-                .claim("userId", userDetails.getUserId())
-                .claim("email", userDetails.getEmail())
-                .claim("role", userDetails.getRole())
+                .subject(userDetails.email())
+                .claim("userId", userDetails.userId())
+                .claim("email", userDetails.email())
+                .claim("role", userDetails.role())
                 .build();
 
         return jwtEncoder.encode(JwtEncoderParameters.from(claimsSet))

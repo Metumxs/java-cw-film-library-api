@@ -1,0 +1,113 @@
+package com.metumxs.filmlibraryapi.rating.service;
+
+import com.metumxs.filmlibraryapi.domain.entity.Movie;
+import com.metumxs.filmlibraryapi.domain.entity.Rating;
+import com.metumxs.filmlibraryapi.domain.entity.User;
+import com.metumxs.filmlibraryapi.domain.repository.MovieRepository;
+import com.metumxs.filmlibraryapi.domain.repository.RatingRepository;
+import com.metumxs.filmlibraryapi.domain.repository.UserRepository;
+import com.metumxs.filmlibraryapi.exception.ConflictException;
+import com.metumxs.filmlibraryapi.exception.NotFoundException;
+import com.metumxs.filmlibraryapi.rating.dto.RatingRequestDto;
+import com.metumxs.filmlibraryapi.rating.dto.RatingResponseDto;
+import com.metumxs.filmlibraryapi.rating.dto.UserRatingResponseDto;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class RatingService
+{
+    private final RatingRepository ratingRepository;
+    private final MovieRepository movieRepository;
+    private final UserRepository userRepository;
+
+    @Transactional
+    public RatingResponseDto createRating(Long movieId, Long currentUserId, RatingRequestDto requestDto)
+    {
+        Movie movie = movieRepository.findById(movieId)
+                .orElseThrow(() -> new NotFoundException("Movie with id " + movieId + " not found"));
+
+        if (ratingRepository.existsByUser_IdAndMovie_Id(currentUserId, movieId))
+        {
+            throw new ConflictException("Rating for movie " + movieId + " already exists for current user");
+        }
+
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new NotFoundException("User with id " + currentUserId + " not found"));
+
+        Rating rating = new Rating();
+        rating.setValue(requestDto.value());
+        rating.setMovie(movie);
+        rating.setUser(user);
+
+        Rating savedRating = ratingRepository.save(rating);
+
+        return toRatingResponseDto(savedRating);
+    }
+
+    @Transactional
+    public RatingResponseDto updateRating(Long movieId, Long currentUserId, RatingRequestDto requestDto)
+    {
+        if (!movieRepository.existsById(movieId))
+        {
+            throw new NotFoundException("Movie with id " + movieId + " not found");
+        }
+
+        Rating rating = ratingRepository.findByUser_IdAndMovie_Id(currentUserId, movieId)
+                .orElseThrow(() -> new NotFoundException(
+                        "Rating for movie " + movieId + " by current user not found"
+                ));
+
+        rating.setValue(requestDto.value());
+
+        Rating updatedRating = ratingRepository.save(rating);
+
+        return toRatingResponseDto(updatedRating);
+    }
+
+    @Transactional
+    public void deleteRating(Long movieId, Long currentUserId)
+    {
+        if (!movieRepository.existsById(movieId))
+        {
+            throw new NotFoundException("Movie with id " + movieId + " not found");
+        }
+
+        Rating rating = ratingRepository.findByUser_IdAndMovie_Id(currentUserId, movieId)
+                .orElseThrow(() -> new NotFoundException(
+                        "Rating for movie " + movieId + " by current user not found"
+                ));
+
+        ratingRepository.delete(rating);
+    }
+
+    public List<UserRatingResponseDto> getMyRatings(Long currentUserId)
+    {
+        return ratingRepository.findAllByUser_Id(currentUserId)
+                .stream()
+                .map(rating ->
+                        new UserRatingResponseDto(
+                            rating.getMovie().getId(),
+                            rating.getMovie().getTitle(),
+                            rating.getValue()
+                        )
+                )
+                .toList();
+    }
+
+    private RatingResponseDto toRatingResponseDto(Rating rating)
+    {
+        return new RatingResponseDto(
+                rating.getId(),
+                rating.getMovie().getId(),
+                rating.getUser().getId(),
+                rating.getValue(),
+                rating.getCreatedAt(),
+                rating.getUpdatedAt()
+        );
+    }
+}

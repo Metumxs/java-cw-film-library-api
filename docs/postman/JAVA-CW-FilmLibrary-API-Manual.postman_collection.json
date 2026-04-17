@@ -7,188 +7,27 @@
   },
   "item": [
     {
-      "name": "Movies | All Filters Applied",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "localhost:8080/api/v1/movies?page=0&title=dark&genre=Drama&releaseYear=2020",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "api",
-            "v1",
-            "movies"
-          ],
-          "query": [
-            {
-              "key": "page",
-              "value": "0"
-            },
-            {
-              "key": "title",
-              "value": "dark"
-            },
-            {
-              "key": "genre",
-              "value": "Drama"
-            },
-            {
-              "key": "releaseYear",
-              "value": "2020"
-            }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Movies | Details by Id",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": []
-    },
-    {
-      "name": "Movies | No Filters Applied",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "localhost:8080/api/v1/movies?page=0",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "api",
-            "v1",
-            "movies"
-          ],
-          "query": [
-            {
-              "key": "page",
-              "value": "0"
-            }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Movies | Admin Create Movie",
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"title\": \"Super Anime 2\",\r\n    \"description\": \"Some test anime title.\",\r\n    \"releaseYear\": 2001,\r\n    \"durationMinutes\": 89,\r\n    \"country\": \"Japan\",\r\n    \"genreIds\": [\r\n        \"3\",\r\n        \"6\"\r\n    ]\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
+      "name": "LOG OUT (REMOVE ACCESS TOKEN)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.collectionVariables.set(\"Access Token\", \"\");\r",
+              "console.log(\"Token has been erased!\");"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
           }
-        },
-        "url": {
-          "raw": "localhost:8080/api/v1/admin/movies",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "api",
-            "v1",
-            "admin",
-            "movies"
-          ]
         }
-      },
-      "response": []
-    },
-    {
-      "name": "Movies | Admin Update Movie",
-      "request": {
-        "auth": {
-          "type": "oauth2",
-          "oauth2": [
-            {
-              "key": "tokenType",
-              "value": "",
-              "type": "string"
-            },
-            {
-              "key": "accessToken",
-              "value": "{{Access Token}}",
-              "type": "string"
-            },
-            {
-              "key": "addTokenTo",
-              "value": "header",
-              "type": "string"
-            }
-          ]
-        },
-        "method": "PUT",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"title\": \"Super Anime 3\",\r\n    \"description\": \"Some test anime title.\",\r\n    \"releaseYear\": \"2001\",\r\n    \"durationMinutes\": 89,\r\n    \"country\": \"Japan\",\r\n    \"genreIds\": [\r\n        3,\r\n        6\r\n    ]\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "localhost:8080/api/v1/admin/movies/8",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "api",
-            "v1",
-            "admin",
-            "movies",
-            "8"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Movies | Admin Delete Movie",
+      ],
       "request": {
         "method": "DELETE",
         "header": [],
-        "url": {
-          "raw": "localhost:8080/api/v1/admin/movies/8",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "api",
-            "v1",
-            "admin",
-            "movies",
-            "8"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Auth | Register | Certain Fail",
-      "request": {
-        "method": "POST",
-        "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n    \"name\": \"test_user_1\",\r\n    \"email\": \"testuser1@example.com\",\r\n    \"password\": \"superpass123\"\r\n}",
+          "raw": "",
           "options": {
             "raw": {
               "language": "json"
@@ -196,47 +35,11 @@
           }
         },
         "url": {
-          "raw": "localhost:8080/api/v1/auth/register",
+          "raw": "localhost:8080",
           "host": [
             "localhost"
           ],
-          "port": "8080",
-          "path": [
-            "api",
-            "v1",
-            "auth",
-            "register"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Auth | Register",
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"name\": \"\",\r\n    \"email\": \"\",\r\n    \"password\": \"\"\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "localhost:8080/api/v1/auth/register",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "api",
-            "v1",
-            "auth",
-            "register"
-          ]
+          "port": "8080"
         }
       },
       "response": []
@@ -407,27 +210,13 @@
       "response": []
     },
     {
-      "name": "LOG OUT (REMOVE ACCESS TOKEN)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.collectionVariables.set(\"Access Token\", \"\");\r",
-              "console.log(\"Token has been erased!\");"
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
-        }
-      ],
+      "name": "Auth | Register",
       "request": {
-        "method": "DELETE",
+        "method": "POST",
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "",
+          "raw": "{\r\n    \"name\": \"\",\r\n    \"email\": \"\",\r\n    \"password\": \"\"\r\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -435,11 +224,408 @@
           }
         },
         "url": {
-          "raw": "localhost:8080",
+          "raw": "localhost:8080/api/v1/auth/register",
           "host": [
             "localhost"
           ],
-          "port": "8080"
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Auth | Register | Certain Fail",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"test_user_1\",\r\n    \"email\": \"testuser1@example.com\",\r\n    \"password\": \"superpass123\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/v1/auth/register",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Movies | No Filters Applied",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/v1/movies?page=0",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "movies"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Movies | Details by Id",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "Movies | All Filters Applied",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/v1/movies?page=0&title=dark&genre=Drama&releaseYear=2020",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "movies"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "title",
+              "value": "dark"
+            },
+            {
+              "key": "genre",
+              "value": "Drama"
+            },
+            {
+              "key": "releaseYear",
+              "value": "2020"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Movies | Admin Create Movie",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"title\": \"Super Anime 2\",\r\n    \"description\": \"Some test anime title.\",\r\n    \"releaseYear\": 2001,\r\n    \"durationMinutes\": 89,\r\n    \"country\": \"Japan\",\r\n    \"genreIds\": [\r\n        \"3\",\r\n        \"6\"\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/v1/admin/movies",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "movies"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Movies | Admin Update Movie",
+      "request": {
+        "auth": {
+          "type": "oauth2",
+          "oauth2": [
+            {
+              "key": "tokenType",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "key": "accessToken",
+              "value": "{{Access Token}}",
+              "type": "string"
+            },
+            {
+              "key": "addTokenTo",
+              "value": "header",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"title\": \"Super Anime 3\",\r\n    \"description\": \"Some test anime title.\",\r\n    \"releaseYear\": \"2001\",\r\n    \"durationMinutes\": 89,\r\n    \"country\": \"Japan\",\r\n    \"genreIds\": [\r\n        3,\r\n        6\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/v1/admin/movies/8",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "movies",
+            "8"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Movies | Admin Delete Movie",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/v1/admin/movies/8",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "movies",
+            "8"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Ratings | Current User",
+      "request": {
+        "auth": {
+          "type": "oauth2",
+          "oauth2": [
+            {
+              "key": "tokenType",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "key": "accessToken",
+              "value": "{{Access Token}}",
+              "type": "string"
+            },
+            {
+              "key": "addTokenTo",
+              "value": "header",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/v1/users/me/ratings",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "me",
+            "ratings"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Ratings | Current User For Path Movie",
+      "request": {
+        "auth": {
+          "type": "oauth2",
+          "oauth2": [
+            {
+              "key": "tokenType",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "key": "accessToken",
+              "value": "{{Access Token}}",
+              "type": "string"
+            },
+            {
+              "key": "addTokenTo",
+              "value": "header",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"value\": 10\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/v1/movies/1/rating",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "movies",
+            "1",
+            "rating"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Ratings | Current User For Path Movie",
+      "request": {
+        "auth": {
+          "type": "oauth2",
+          "oauth2": [
+            {
+              "key": "tokenType",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "key": "accessToken",
+              "value": "{{Access Token}}",
+              "type": "string"
+            },
+            {
+              "key": "addTokenTo",
+              "value": "header",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"value\": 1\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/v1/movies/1/rating",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "movies",
+            "1",
+            "rating"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Ratings | Current User For Path Movie",
+      "request": {
+        "auth": {
+          "type": "oauth2",
+          "oauth2": [
+            {
+              "key": "tokenType",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "key": "accessToken",
+              "value": "{{Access Token}}",
+              "type": "string"
+            },
+            {
+              "key": "addTokenTo",
+              "value": "header",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/v1/movies/1/rating",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "movies",
+            "1",
+            "rating"
+          ]
         }
       },
       "response": []

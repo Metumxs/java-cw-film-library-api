@@ -10,7 +10,7 @@ import com.metumxs.filmlibraryapi.domain.repository.RoleRepository;
 import com.metumxs.filmlibraryapi.domain.repository.UserRepository;
 import com.metumxs.filmlibraryapi.exception.ConflictException;
 import com.metumxs.filmlibraryapi.security.JwtTokenService;
-import com.metumxs.filmlibraryapi.security.SecurityUserDetails;
+import com.metumxs.filmlibraryapi.security.CustomUserDetails;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -262,7 +262,7 @@ class AuthServiceTest
                 "strongPass123"
         );
 
-        SecurityUserDetails userDetails = new SecurityUserDetails(
+        CustomUserDetails userDetails = new CustomUserDetails(
                 1L,
                 "serhii@example.com",
                 "hashed-password",
@@ -304,7 +304,7 @@ class AuthServiceTest
                 "strongPass123"
         );
 
-        SecurityUserDetails userDetails = new SecurityUserDetails(
+        CustomUserDetails userDetails = new CustomUserDetails(
                 1L,
                 "serhii@example.com",
                 "hashed-password",
@@ -369,7 +369,7 @@ class AuthServiceTest
                 "strongPass123"
         );
 
-        SecurityUserDetails userDetails = new SecurityUserDetails(
+        CustomUserDetails userDetails = new CustomUserDetails(
                 99L,
                 "serhii@example.com",
                 "hashed-password",

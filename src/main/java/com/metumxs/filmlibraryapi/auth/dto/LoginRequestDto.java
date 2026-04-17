@@ -8,11 +8,11 @@ import static com.metumxs.filmlibraryapi.validation.ValidationConstants.*;
 public record LoginRequestDto(
         @NotBlank(message = "email {validation.notBlank}")
         @Email(message = "email {user.email.format}")
-        @Size(max = USER_EMAIL_MAX_LENGTH, message = "email {user.email.size}")
+        @Size(max = USER_EMAIL_MAX_LENGTH, message = "email {user.email.maxSize}")
         String email,
 
         @NotBlank(message = "password must not be blank")
-        @Size(min = PASSWORD_MIN_LENGTH, max = PASSWORD_MAX_LENGTH, message = "{user.password.size}")
+        @Size(min = PASSWORD_MIN_LENGTH, max = PASSWORD_MAX_LENGTH, message = "{user.password.sizeRange}")
         String password
 )
 {

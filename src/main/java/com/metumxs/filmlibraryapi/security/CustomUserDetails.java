@@ -1,22 +1,13 @@
 package com.metumxs.filmlibraryapi.security;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-@Getter
-@RequiredArgsConstructor
-public class SecurityUserDetails implements UserDetails
+public record CustomUserDetails(Long userId, String email, String passwordHash, String role) implements UserDetails
 {
-    private final Long userId;
-    private final String email;
-    private final String passwordHash;
-    private final String role;
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities()
     {
