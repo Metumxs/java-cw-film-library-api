@@ -46,7 +46,7 @@ public class RatingService
 
         Rating savedRating = ratingRepository.save(rating);
 
-        return toRatingResponseDto(savedRating);
+        return RatingResponseDto.fromEntity(savedRating);
     }
 
     @Transactional
@@ -66,7 +66,7 @@ public class RatingService
 
         Rating updatedRating = ratingRepository.save(rating);
 
-        return toRatingResponseDto(updatedRating);
+        return RatingResponseDto.fromEntity(updatedRating);
     }
 
     @Transactional
@@ -97,17 +97,5 @@ public class RatingService
                         )
                 )
                 .toList();
-    }
-
-    private RatingResponseDto toRatingResponseDto(Rating rating)
-    {
-        return new RatingResponseDto(
-                rating.getId(),
-                rating.getMovie().getId(),
-                rating.getUser().getId(),
-                rating.getValue(),
-                rating.getCreatedAt(),
-                rating.getUpdatedAt()
-        );
     }
 }
