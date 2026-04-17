@@ -1,5 +1,12 @@
 package com.metumxs.filmlibraryapi.movie.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import com.metumxs.filmlibraryapi.exception.ErrorResponse;
 import com.metumxs.filmlibraryapi.movie.dto.MovieDetailsResponseDto;
 import com.metumxs.filmlibraryapi.movie.dto.MovieSummaryResponseDto;
 import com.metumxs.filmlibraryapi.movie.service.MovieService;
@@ -16,10 +23,16 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/movies")
 @RequiredArgsConstructor
 @Validated
+@Tag(name = "Movies", description = "Public movie catalog endpoints")
 public class MovieController
 {
     private final MovieService movieService;
 
+    @Operation(summary = "Get paginated movie catalog with optional filters")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Movies retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid query parameters", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @GetMapping
     public ResponseEntity<Page<MovieSummaryResponseDto>> getMovies(
             @RequestParam(defaultValue = "0")
@@ -46,6 +59,12 @@ public class MovieController
         );
     }
 
+    @Operation(summary = "Get movie details by id")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Movie details retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid movie id", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Movie not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @GetMapping("/{movieId}")
     public ResponseEntity<MovieDetailsResponseDto> getMovieDetails(
             @PathVariable

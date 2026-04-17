@@ -310,7 +310,7 @@ class RatingServiceTest
         assertNotNull(result);
         assertEquals(2, result.size());
 
-        assertEquals(TEST_MOVIE_ID, result.getFirst().movieId());
+        assertEquals(TEST_MOVIE_ID, result.get(0).movieId());
         assertEquals("Inception", result.get(0).movieTitle());
         assertEquals(VALID_RATING_VALUE, result.get(0).value());
 
