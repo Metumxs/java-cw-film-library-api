@@ -37,3 +37,9 @@ springdoc:
     operations-sorter: method
     tags-sorter: alpha
     try-it-out-enabled: true
+
+jwt:
+  public:
+    key: ${JWT_PUBLIC_KEY_PATH:classpath:certs/public.pem}
+  private:
+    key: ${JWT_PRIVATE_KEY_PATH:classpath:certs/private.pem}
