@@ -81,7 +81,7 @@ class AuthServiceTest
                 TEST_PASSWORD
         );
 
-        LocalDateTime createdAt = LocalDateTime.of(2026, 4, 14, 20, 0);
+        LocalDateTime createdAt = LocalDateTime.of(2026, 1, 1, 1, 1);
 
         when(userRepository.existsByEmail(TEST_EMAIL)).thenReturn(false);
         when(roleRepository.findByName(ROLE_USER)).thenReturn(Optional.of(defaultRole));
@@ -202,7 +202,7 @@ class AuthServiceTest
         {
             User userToSave = invocation.getArgument(0);
             userToSave.setId(1L);
-            userToSave.setCreatedAt(LocalDateTime.of(2026, 4, 14, 21, 0));
+            userToSave.setCreatedAt(LocalDateTime.of(2026, 1, 1, 1, 1));
             return userToSave;
         });
 
@@ -242,7 +242,7 @@ class AuthServiceTest
         {
             User userToSave = invocation.getArgument(0);
             userToSave.setId(2L);
-            userToSave.setCreatedAt(LocalDateTime.of(2026, 4, 14, 22, 0));
+            userToSave.setCreatedAt(LocalDateTime.of(2026, 1, 1, 1, 1));
             return userToSave;
         });
 

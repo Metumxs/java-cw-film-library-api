@@ -354,8 +354,8 @@ class RatingServiceTest
         rating.setValue(value);
         rating.setMovie(movie);
         rating.setUser(user);
-        rating.setCreatedAt(LocalDateTime.of(2026, 4, 18, 12, 0));
-        rating.setUpdatedAt(LocalDateTime.of(2026, 4, 18, 12, 5));
+        rating.setCreatedAt(LocalDateTime.of(2026, 1, 1, 1, 1));
+        rating.setUpdatedAt(LocalDateTime.of(2026, 1, 1, 1, 2));
         return rating;
     }
 }
