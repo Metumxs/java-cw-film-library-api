@@ -19,10 +19,10 @@ public class JwtTokenService
     private final JwtEncoder jwtEncoder;
 
     public JwtTokenService(JwtEncoder jwtEncoder,
-                           @Value("${jwt.expiration-seconds:3600}") long expiresIn)
+                           @Value("${jwt.expiration-seconds:3600}") long accessTokenExpiresInSeconds)
     {
         this.jwtEncoder = jwtEncoder;
-        this.accessTokenExpiresInSeconds = expiresIn;
+        this.accessTokenExpiresInSeconds = accessTokenExpiresInSeconds;
     }
 
     public String generateAccessToken(CustomUserDetails userDetails)

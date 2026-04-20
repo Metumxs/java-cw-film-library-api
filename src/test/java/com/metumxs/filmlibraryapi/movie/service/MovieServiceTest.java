@@ -458,7 +458,6 @@ class MovieServiceTest
         when(movieRepository.findById(TEST_MOVIE_ID)).thenReturn(Optional.of(testMovie));
         when(genreRepository.findAllById(requestDto.genreIds()))
                 .thenReturn(List.of(dramaGenre, mysteryGenre));
-        when(movieRepository.save(testMovie)).thenReturn(updatedMovie);
         when(ratingRepository.findRatingSummaryByMovieId(TEST_MOVIE_ID)).thenReturn(Optional.empty());
         when(movieMapper.toDetailsResponseDto(updatedMovie, null, 0L)).thenReturn(responseDto);
 
@@ -470,7 +469,6 @@ class MovieServiceTest
         verify(movieRepository).findById(TEST_MOVIE_ID);
         verify(genreRepository).findAllById(requestDto.genreIds());
         verify(movieMapper).updateEntityFromDto(requestDto, testMovie);
-        verify(movieRepository).save(testMovie);
         verify(ratingRepository).findRatingSummaryByMovieId(TEST_MOVIE_ID);
         verify(movieMapper).toDetailsResponseDto(updatedMovie, null, 0L);
     }

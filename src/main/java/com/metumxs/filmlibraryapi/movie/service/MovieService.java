@@ -130,9 +130,7 @@ public class MovieService
         movieMapper.updateEntityFromDto(requestDto, movie);
         movie.setGenres(genres);
 
-        Movie updatedMovie = movieRepository.save(movie);
-
-        return mapToDetailsResponse(updatedMovie);
+        return mapToDetailsResponse(movie);
     }
 
     @Transactional
