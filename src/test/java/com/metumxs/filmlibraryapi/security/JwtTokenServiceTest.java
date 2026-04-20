@@ -37,7 +37,7 @@ class JwtTokenServiceTest
     @BeforeEach
     void setUp()
     {
-        jwtTokenService = new JwtTokenService(jwtEncoder);
+        jwtTokenService = new JwtTokenService(jwtEncoder, 3600L);
 
         testUserDetails = new CustomUserDetails(
                 TEST_USER_ID,

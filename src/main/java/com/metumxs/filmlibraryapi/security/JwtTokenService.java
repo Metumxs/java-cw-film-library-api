@@ -1,6 +1,8 @@
 package com.metumxs.filmlibraryapi.security;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -8,12 +10,20 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 
 @Service
-@RequiredArgsConstructor
 public class JwtTokenService
 {
-    private static final long ACCESS_TOKEN_EXPIRES_IN_SECONDS = 3600L;
+    @Getter
+    @Value("${jwt.expiration-seconds:3600}")
+    private long accessTokenExpiresInSeconds;
 
     private final JwtEncoder jwtEncoder;
+
+    public JwtTokenService(JwtEncoder jwtEncoder,
+                           @Value("${jwt.expiration-seconds:3600}") long expiresIn)
+    {
+        this.jwtEncoder = jwtEncoder;
+        this.accessTokenExpiresInSeconds = expiresIn;
+    }
 
     public String generateAccessToken(CustomUserDetails userDetails)
     {
@@ -22,7 +32,7 @@ public class JwtTokenService
         JwtClaimsSet claimsSet = JwtClaimsSet.builder()
                 .issuer("film-library-api")
                 .issuedAt(now)
-                .expiresAt(now.plusSeconds(ACCESS_TOKEN_EXPIRES_IN_SECONDS))
+                .expiresAt(now.plusSeconds(accessTokenExpiresInSeconds))
                 .subject(userDetails.email())
                 .claim("userId", userDetails.userId())
                 .claim("email", userDetails.email())
@@ -33,8 +43,4 @@ public class JwtTokenService
                 .getTokenValue();
     }
 
-    public long getAccessTokenExpiresInSeconds()
-    {
-        return ACCESS_TOKEN_EXPIRES_IN_SECONDS;
-    }
 }

@@ -43,3 +43,4 @@ jwt:
     key: ${JWT_PUBLIC_KEY_PATH:classpath:certs/public.pem}
   private:
     key: ${JWT_PRIVATE_KEY_PATH:classpath:certs/private.pem}
+  expiration-seconds: 3600
