@@ -7,7 +7,7 @@ import static com.metumxs.filmlibraryapi.validation.ValidationConstants.*;
 
 public record RegistrationRequestDto(
         @NotBlank(message = "name {validation.notBlank}")
-        @Size(max = USER_NAME_MAX_LENGTH, message = "{user.name.maxSize}")
+        @Size(min = USER_NAME_MIN_LENGTH, max = USER_NAME_MAX_LENGTH, message = "{user.name.maxSize}")
         String name,
 
         @NotBlank(message = "email {validation.notBlank}")
