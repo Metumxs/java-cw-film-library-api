@@ -1,7 +1,6 @@
 package com.metumxs.filmlibraryapi.security;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -42,5 +41,4 @@ public class JwtTokenService
         return jwtEncoder.encode(JwtEncoderParameters.from(claimsSet))
                 .getTokenValue();
     }
-
 }

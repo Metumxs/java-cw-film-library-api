@@ -8,6 +8,7 @@ import com.metumxs.filmlibraryapi.domain.repository.RatingRepository;
 import com.metumxs.filmlibraryapi.domain.repository.UserRepository;
 import com.metumxs.filmlibraryapi.exception.ConflictException;
 import com.metumxs.filmlibraryapi.exception.NotFoundException;
+import com.metumxs.filmlibraryapi.rating.RatingService;
 import com.metumxs.filmlibraryapi.rating.dto.RatingRequestDto;
 import com.metumxs.filmlibraryapi.rating.dto.RatingResponseDto;
 import com.metumxs.filmlibraryapi.rating.dto.UserRatingResponseDto;
@@ -280,11 +281,11 @@ class RatingServiceTest
     }
 
     @Test
-    void getMyRatings_shouldReturnEmptyList_whenUserHasNoRatings()
+    void getUserRatings_shouldReturnEmptyList_whenUserHasNoRatings()
     {
         when(ratingRepository.findAllByUser_Id(TEST_USER_ID)).thenReturn(List.of());
 
-        List<UserRatingResponseDto> result = ratingService.getMyRatings(TEST_USER_ID);
+        List<UserRatingResponseDto> result = ratingService.getUserRatings(TEST_USER_ID);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -295,7 +296,7 @@ class RatingServiceTest
     }
 
     @Test
-    void getMyRatings_shouldReturnMappedRatings()
+    void getUserRatings_shouldReturnMappedRatings()
     {
         Movie movie2 = buildMovie(2L, "Interstellar");
 
@@ -304,8 +305,9 @@ class RatingServiceTest
 
         when(ratingRepository.findAllByUser_Id(TEST_USER_ID))
                 .thenReturn(List.of(rating1, rating2));
+        when(movieRepository.findAllById(any())).thenReturn(List.of(testMovie, movie2));
 
-        List<UserRatingResponseDto> result = ratingService.getMyRatings(TEST_USER_ID);
+        List<UserRatingResponseDto> result = ratingService.getUserRatings(TEST_USER_ID);
 
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -319,7 +321,7 @@ class RatingServiceTest
         assertEquals(EXISTING_RATING_VALUE, result.get(1).value());
 
         verify(ratingRepository).findAllByUser_Id(TEST_USER_ID);
-        verifyNoInteractions(movieRepository);
+        verify(movieRepository).findAllById(any());
         verifyNoInteractions(userRepository);
     }
 

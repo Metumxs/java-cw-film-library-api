@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import com.metumxs.filmlibraryapi.exception.ErrorResponse;
 import com.metumxs.filmlibraryapi.movie.dto.MovieDetailsResponseDto;
 import com.metumxs.filmlibraryapi.movie.dto.MovieSummaryResponseDto;
-import com.metumxs.filmlibraryapi.movie.service.MovieService;
+import com.metumxs.filmlibraryapi.movie.MovieService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;

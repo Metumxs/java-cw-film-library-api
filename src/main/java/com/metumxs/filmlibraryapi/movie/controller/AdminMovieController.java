@@ -11,7 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import com.metumxs.filmlibraryapi.movie.dto.CreateMovieRequestDto;
 import com.metumxs.filmlibraryapi.movie.dto.MovieDetailsResponseDto;
 import com.metumxs.filmlibraryapi.movie.dto.UpdateMovieRequestDto;
-import com.metumxs.filmlibraryapi.movie.service.MovieService;
+import com.metumxs.filmlibraryapi.movie.MovieService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;

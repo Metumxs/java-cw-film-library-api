@@ -1,5 +1,6 @@
 package com.metumxs.filmlibraryapi.auth.service;
 
+import com.metumxs.filmlibraryapi.auth.AuthService;
 import com.metumxs.filmlibraryapi.auth.dto.LoginRequestDto;
 import com.metumxs.filmlibraryapi.auth.dto.LoginResponseDto;
 import com.metumxs.filmlibraryapi.auth.dto.RegistrationRequestDto;

@@ -1,4 +1,4 @@
-package com.metumxs.filmlibraryapi.rating.service;
+package com.metumxs.filmlibraryapi.rating;
 
 import com.metumxs.filmlibraryapi.domain.entity.Movie;
 import com.metumxs.filmlibraryapi.domain.entity.Rating;
@@ -62,7 +62,7 @@ public class RatingService
                         "Rating for movie " + movieId + " by current user not found"
                 ));
 
-        rating.setValue(requestDto.value());
+        rating.updateValue(requestDto.value());
 
         Rating updatedRating = ratingRepository.save(rating);
 
@@ -85,17 +85,26 @@ public class RatingService
         ratingRepository.delete(rating);
     }
 
-    public List<UserRatingResponseDto> getMyRatings(Long currentUserId)
+    public List<UserRatingResponseDto> getUserRatings(Long currentUserId)
     {
-        return ratingRepository.findAllByUser_Id(currentUserId)
-                .stream()
-                .map(rating ->
-                        new UserRatingResponseDto(
-                            rating.getMovie().getId(),
-                            rating.getMovie().getTitle(),
-                            rating.getValue()
-                        )
-                )
+        List<Rating> ratings = ratingRepository.findAllByUser_Id(currentUserId);
+
+        if (ratings.isEmpty())
+            return List.of();
+
+        List<Long> movieIds = ratings.stream()
+                .map(r -> r.getMovie().getId())
+                .distinct()
+                .toList();
+
+        movieRepository.findAllById(movieIds);
+
+        return ratings.stream()
+                .map(rating -> new UserRatingResponseDto(
+                        rating.getMovie().getId(),
+                        rating.getMovie().getTitle(),
+                        rating.getValue()
+                ))
                 .toList();
     }
 }

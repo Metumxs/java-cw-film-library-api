@@ -10,7 +10,7 @@ import com.metumxs.filmlibraryapi.auth.dto.LoginRequestDto;
 import com.metumxs.filmlibraryapi.auth.dto.LoginResponseDto;
 import com.metumxs.filmlibraryapi.auth.dto.RegistrationRequestDto;
 import com.metumxs.filmlibraryapi.auth.dto.RegistrationResponseDto;
-import com.metumxs.filmlibraryapi.auth.service.AuthService;
+import com.metumxs.filmlibraryapi.auth.AuthService;
 import com.metumxs.filmlibraryapi.exception.ErrorResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -16,6 +16,8 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
 import java.time.OffsetDateTime;
 import java.util.stream.Collectors;
 
@@ -207,6 +209,19 @@ public class GlobalExceptionHandler
         return buildErrorResponse(
                 HttpStatus.FORBIDDEN,
                 "You do not have permission to access this resource",
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatchException(
+            MethodArgumentTypeMismatchException ex, HttpServletRequest request)
+    {
+        log.warn("Type mismatch error at {}: {}", request.getRequestURI(), ex.getMessage());
+
+        return buildErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                "Invalid format for parameter '\" + ex.getName() + \"'",
                 request.getRequestURI()
         );
     }

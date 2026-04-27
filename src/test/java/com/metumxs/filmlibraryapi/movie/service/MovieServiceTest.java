@@ -7,6 +7,7 @@ import com.metumxs.filmlibraryapi.domain.repository.MovieRepository;
 import com.metumxs.filmlibraryapi.domain.repository.RatingRepository;
 import com.metumxs.filmlibraryapi.exception.BadRequestException;
 import com.metumxs.filmlibraryapi.exception.NotFoundException;
+import com.metumxs.filmlibraryapi.movie.MovieService;
 import com.metumxs.filmlibraryapi.movie.dto.MovieDetailsResponseDto;
 import com.metumxs.filmlibraryapi.movie.dto.MovieSummaryResponseDto;
 import com.metumxs.filmlibraryapi.movie.mapper.MovieMapper;

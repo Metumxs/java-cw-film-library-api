@@ -1,4 +1,4 @@
-package com.metumxs.filmlibraryapi.movie.service;
+package com.metumxs.filmlibraryapi.movie;
 
 import com.metumxs.filmlibraryapi.domain.entity.Movie;
 import com.metumxs.filmlibraryapi.domain.projection.MovieRatingSummaryProjection;

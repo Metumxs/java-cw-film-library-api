@@ -11,7 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import com.metumxs.filmlibraryapi.rating.dto.RatingRequestDto;
 import com.metumxs.filmlibraryapi.rating.dto.RatingResponseDto;
 import com.metumxs.filmlibraryapi.rating.dto.UserRatingResponseDto;
-import com.metumxs.filmlibraryapi.rating.service.RatingService;
+import com.metumxs.filmlibraryapi.rating.RatingService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -109,6 +109,6 @@ public class RatingController
     {
         Long currentUserId = authentication.getToken().getClaim("userId");
 
-        return ResponseEntity.ok(ratingService.getMyRatings(currentUserId));
+        return ResponseEntity.ok(ratingService.getUserRatings(currentUserId));
     }
 }
