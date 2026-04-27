@@ -3,6 +3,7 @@ package com.metumxs.filmlibraryapi.rating.service;
 import com.metumxs.filmlibraryapi.domain.entity.Movie;
 import com.metumxs.filmlibraryapi.domain.entity.Rating;
 import com.metumxs.filmlibraryapi.domain.entity.User;
+import com.metumxs.filmlibraryapi.domain.projection.MovieSummaryProjection;
 import com.metumxs.filmlibraryapi.domain.repository.MovieRepository;
 import com.metumxs.filmlibraryapi.domain.repository.RatingRepository;
 import com.metumxs.filmlibraryapi.domain.repository.UserRepository;
@@ -305,7 +306,12 @@ class RatingServiceTest
 
         when(ratingRepository.findAllByUser_Id(TEST_USER_ID))
                 .thenReturn(List.of(rating1, rating2));
-        when(movieRepository.findAllById(any())).thenReturn(List.of(testMovie, movie2));
+
+        List<MovieSummaryProjection> projections = List.of(
+                new TestMovieSummaryProjection(TEST_MOVIE_ID, "Inception"),
+                new TestMovieSummaryProjection(2L, "Interstellar")
+        );
+        when(movieRepository.findAllMovieSummariesByIds(any())).thenReturn(projections);
 
         List<UserRatingResponseDto> result = ratingService.getUserRatings(TEST_USER_ID);
 
@@ -321,7 +327,7 @@ class RatingServiceTest
         assertEquals(EXISTING_RATING_VALUE, result.get(1).value());
 
         verify(ratingRepository).findAllByUser_Id(TEST_USER_ID);
-        verify(movieRepository).findAllById(any());
+        verify(movieRepository).findAllMovieSummariesByIds(any());
         verifyNoInteractions(userRepository);
     }
 
@@ -359,5 +365,9 @@ class RatingServiceTest
         rating.setCreatedAt(LocalDateTime.of(2026, 1, 1, 1, 1));
         rating.setUpdatedAt(LocalDateTime.of(2026, 1, 1, 1, 2));
         return rating;
+    }
+
+    private record TestMovieSummaryProjection(Long getId, String getTitle) implements MovieSummaryProjection
+    {
     }
 }

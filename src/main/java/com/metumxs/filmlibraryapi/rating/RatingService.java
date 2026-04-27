@@ -3,6 +3,7 @@ package com.metumxs.filmlibraryapi.rating;
 import com.metumxs.filmlibraryapi.domain.entity.Movie;
 import com.metumxs.filmlibraryapi.domain.entity.Rating;
 import com.metumxs.filmlibraryapi.domain.entity.User;
+import com.metumxs.filmlibraryapi.domain.projection.MovieSummaryProjection;
 import com.metumxs.filmlibraryapi.domain.repository.MovieRepository;
 import com.metumxs.filmlibraryapi.domain.repository.RatingRepository;
 import com.metumxs.filmlibraryapi.domain.repository.UserRepository;
@@ -15,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -89,22 +92,34 @@ public class RatingService
     {
         List<Rating> ratings = ratingRepository.findAllByUser_Id(currentUserId);
 
-        if (ratings.isEmpty())
+        if (ratings.isEmpty()) {
             return List.of();
+        }
 
         List<Long> movieIds = ratings.stream()
                 .map(r -> r.getMovie().getId())
                 .distinct()
                 .toList();
 
-        movieRepository.findAllById(movieIds);
+        List<MovieSummaryProjection> movieSummaries = movieRepository.findAllMovieSummariesByIds(movieIds);
+
+        Map<Long, String> movieTitleMap = movieSummaries.stream()
+                .collect(Collectors.toMap(
+                        MovieSummaryProjection::getId,
+                        MovieSummaryProjection::getTitle
+                ));
 
         return ratings.stream()
-                .map(rating -> new UserRatingResponseDto(
-                        rating.getMovie().getId(),
-                        rating.getMovie().getTitle(),
-                        rating.getValue()
-                ))
+                .map(rating -> {
+                    Long movieId = rating.getMovie().getId();
+                    String title = movieTitleMap.getOrDefault(movieId, "Unknown Title");
+
+                    return new UserRatingResponseDto(
+                            movieId,
+                            title,
+                            rating.getValue()
+                    );
+                })
                 .toList();
     }
 }

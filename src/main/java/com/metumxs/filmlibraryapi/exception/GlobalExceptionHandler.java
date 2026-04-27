@@ -221,7 +221,7 @@ public class GlobalExceptionHandler
 
         return buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
-                "Invalid format for parameter '\" + ex.getName() + \"'",
+                "Invalid format for parameter '" + ex.getName() + "'",
                 request.getRequestURI()
         );
     }
