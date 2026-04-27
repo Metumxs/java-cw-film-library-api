@@ -1,4 +1,4 @@
-JWT Keys Generation
+=== JWT Keys Generation ===
 
 Before running the application, generate RSA keys.
 If keys are missing or invalid, the application will fail to start.
@@ -17,3 +17,23 @@ If keys are missing or invalid, the application will fail to start.
    secrets/
       private.pem
       public.pem
+
+===
+
+=== Environment Setup ===
+
+Create a .env file based on the provided example:
+    cp .env.example .env
+
+Run with Docker
+1. Prerequisites
+   .env file created
+   secrets/ folder with RSA keys
+
+2. Start
+   docker compose up --build
+
+3. Stop
+   docker compose down
+
+===
