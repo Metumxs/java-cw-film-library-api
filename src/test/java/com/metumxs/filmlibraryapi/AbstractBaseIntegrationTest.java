@@ -11,6 +11,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
@@ -30,13 +33,13 @@ public abstract class AbstractBaseIntegrationTest
     protected String obtainAccessToken(String name, String email, String password) throws Exception
     {
         RegistrationRequestDto regRequest = new RegistrationRequestDto(name, email, password);
-        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/v1/auth/register")
-                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/api/v1/auth/register")
+                .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(regRequest)));
 
         LoginRequestDto loginRequest = new LoginRequestDto(email, password);
-        String response = mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/v1/auth/login")
-                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+        String response = mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andReturn().getResponse().getContentAsString();
 
