@@ -13,6 +13,7 @@ import com.metumxs.filmlibraryapi.rating.dto.RatingRequestDto;
 import com.metumxs.filmlibraryapi.rating.dto.RatingResponseDto;
 import com.metumxs.filmlibraryapi.rating.dto.UserRatingResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -34,11 +35,6 @@ public class RatingService
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new NotFoundException("Movie with id " + movieId + " not found"));
 
-        if (ratingRepository.existsByUser_IdAndMovie_Id(currentUserId, movieId))
-        {
-            throw new ConflictException("Rating for movie " + movieId + " already exists for current user");
-        }
-
         User user = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new NotFoundException("User with id " + currentUserId + " not found"));
 
@@ -47,9 +43,16 @@ public class RatingService
         rating.setMovie(movie);
         rating.setUser(user);
 
-        Rating savedRating = ratingRepository.save(rating);
+        try
+        {
+            Rating savedRating = ratingRepository.save(rating);
 
-        return RatingResponseDto.fromEntity(savedRating);
+            return RatingResponseDto.fromEntity(savedRating);
+        }
+        catch (DataIntegrityViolationException e)
+        {
+            throw new ConflictException("Rating for movie " + movieId + " already exists for current user");
+        }
     }
 
     @Transactional

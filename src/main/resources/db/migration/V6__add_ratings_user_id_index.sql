@@ -1,0 +1,1 @@
+CREATE INDEX idx_ratings_user_id ON ratings (user_id);
